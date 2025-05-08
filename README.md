@@ -6,6 +6,10 @@ FastAPI-based facturation system.
 
 ```bash
 git reset --soft HEAD~
+
+# to run on local machine change into configDict.py
+# env_file = "../.env"
+
 docker build -t my_fastapi_app .
 
 # Remove existing containers and volumes

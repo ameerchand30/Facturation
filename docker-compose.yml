@@ -41,6 +41,8 @@ services:
     build:
       context: . # The directory containing your Dockerfile
       dockerfile: Dockerfile # Name of your Dockerfile
+    env_file:
+      - .env
     volumes:
       - app_data:/app/data # Mount a volume for application data (optional)
     environment:

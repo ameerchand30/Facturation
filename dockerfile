@@ -24,8 +24,11 @@ ENV PATH="${POETRY_HOME}/bin:$PATH"
 # Set working directory
 WORKDIR /app
 
+COPY . .
+
 # Copy only dependency files first
 COPY pyproject.toml poetry.lock* README.md ./
+
 
 # Debug: List files
 RUN ls -la
@@ -41,6 +44,9 @@ RUN mkdir -p /app/src
 COPY ./src/ /app/src
 COPY ./src/templates ./templates
 COPY ./src/static ./static
+COPY .env ./.env
+
+
 
 # Install project
 RUN poetry install --no-ansi
