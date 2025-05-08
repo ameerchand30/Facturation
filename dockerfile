@@ -15,6 +15,17 @@ RUN apt-get update && \
     curl \
     gcc \
     python3-dev \
+    # WeasyPrint dependencies
+    libpango1.0-0 \
+    libharfbuzz0b \
+    libpangoft2-1.0-0 \
+    libglib2.0-0 \
+    libcairo2 \
+    libpangocairo-1.0-0 \
+    libgdk-pixbuf2.0-0 \
+    libffi-dev \
+    shared-mime-info \
+    fonts-liberation \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Poetry
