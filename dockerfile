@@ -39,6 +39,8 @@ RUN mkdir -p /app/src
 
 # Copy the rest of the application
 COPY ./src/ /app/src
+COPY ./src/templates ./templates
+COPY ./src/static ./static
 
 # Install project
 RUN poetry install --no-ansi

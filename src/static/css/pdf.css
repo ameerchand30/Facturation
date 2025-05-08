@@ -1,0 +1,111 @@
+.invoice-container {
+    background-color: #ffffff;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    border-radius: 8px;
+}
+.invoice-header {
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 5px;
+    margin-bottom: 5px;
+}
+.invoice-title h2 {
+    color: #3498db;
+    font-weight: 600;
+    font-size: 28px;
+}
+.company-logo {
+    max-height: 80px;
+    margin-bottom: 1rem;
+}
+.company-name {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    color: #2c3e50;
+}
+.company-details {
+    margin: 0px 20px;
+    line-height: 1.8;
+}
+.company-details address {
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+.company-details i {
+    width: 20px;
+    color: #3498db;
+}
+
+.panel {
+    box-shadow: 0 0 15px rgba(0,0,0,0.05);
+    margin-bottom: 20px; border: 1px solid #ddd;
+}
+.panel-heading {
+    background-color: #3498db !important;
+    color: white !important;
+    border-radius: 5px 5px 0 0;
+    padding: 10px 15px;
+}
+.panel-title {
+    font-weight: 600;
+    font-size: 18px;
+}
+.table {
+    margin-bottom: 0;
+    width: 100%;
+    border-collapse: collapse;
+}
+.table > thead > tr > td {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    padding: 15px;
+    border-bottom: 2px solid #3498db;
+}
+.table > tbody > tr > td {
+    padding: 15px;
+    vertical-align: middle;
+    border-bottom: 1px solid #ddd; 
+}
+.amount {
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    text-align: right;
+}
+.total-row {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+.total-section {
+    border-top: 2px solid #3498db;
+    margin-top: 20px;
+    padding-top: 20px;
+}
+.payment-info {
+    background-color: #f8f9fa;
+    padding: 10px;
+    border-radius: 5px;
+    margin-top: 5px;
+}
+.payment-info h4 {
+    color: #3498db;
+    margin-bottom: 5px;
+}
+address {
+    line-height: 1.8;
+}
+.invoice-meta {
+    color: #7f8c8d;
+    font-size: 14px;
+    margin-top: 20px;
+}
+
+/* Bootstrap-like CSS for PDF */
+.container { width: 100%; padding: 15px; }
+.row { display: flex; margin: 0 -15px; justify-content: space-between }
+.col-md-6 { width: 50%; padding: 0 15px; }
+.col-md-12 { width: 100%; padding: 0 15px; }
+.text-right { text-align: right; }
+.text-center { text-align: center; }
+.thick-line { border-top: 2px solid; }
+.no-line { border: none; }

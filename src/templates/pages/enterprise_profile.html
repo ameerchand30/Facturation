@@ -1,0 +1,282 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}Enterprise Profile{% endblock %}
+
+{% block extra_css %}
+   <style>
+        .profile-logo-container {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin: auto;
+        }
+        .profile-logo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .no-logo {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 50px;
+            color: #ccc;
+        }
+        .form-control:disabled, .form-control[readonly] {
+            background-color: #f8f9fa;
+            opacity: 1;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="card shadow">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="mb-0">Enterprise Profile</h3>
+        <button class="btn btn-primary" id="editProfileBtn">Edit Profile</button>
+    </div>
+    
+    <div class="card-body">
+        <form id="enterpriseProfileForm" method="POST" enctype="multipart/form-data">
+            <!-- Logo Section -->
+            <div class="text-center mb-4">
+                <div class="profile-logo-container">
+                    {% if profile.logo %}
+                        {% set logo_path = profile.logo %}
+                        {% if logo_path.startswith('http://') or logo_path.startswith('https://') %}
+                            <img src="{{ logo_path }}" alt="Company Logo" class="profile-logo" id="logoPreview">
+                        {% else %}
+                            <img src="{{ url_for('static', path='img/enterprise_profile_images/' + logo_path) }}"
+                                 alt="Company Logo" class="profile-logo" id="logoPreview">
+                        {% endif %}
+                    {% else %}
+                        <div class="no-logo" id="logoPreview">
+                            <i class="bi bi-building"></i>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+                <div class="mt-2">
+                    <input type="file" class="form-control" id="logo" name="logo" 
+                           accept="image/*" disabled>
+                </div>
+            <!-- Company Information -->
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="company_name" class="form-label">Company Name</label>
+                    <input type="text" class="form-control" id="company_name" 
+                           name="company_name" value="{{ profile.company_name }}" disabled>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="registration_number" class="form-label">Registration Number</label>
+                    <input type="text" class="form-control" id="registration_number" 
+                           name="registration_number" value="{{ profile.registration_number }}" disabled>
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="email" 
+                           name="email" value="{{ profile.email }}" disabled>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="phone" class="form-label">Phone</label>
+                    <input type="tel" class="form-control" id="phone" 
+                           name="phone" value="{{ profile.phone }}" disabled>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="website" class="form-label">Website</label>
+                    <input type="url" class="form-control" id="website" 
+                           name="website" value="{{ profile.website }}" disabled>
+                </div>
+            </div>
+
+            <!-- Address Information -->
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label for="address" class="form-label"> Address</label>
+                    <input type="text" class="form-control" id="address" 
+                           name="address" value="{{ profile.address }}" disabled>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="city" class="form-label">City</label>
+                    <input type="text" class="form-control" id="city" 
+                           name="city" value="{{ profile.city }}" disabled>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="state" class="form-label">State</label>
+                    <input type="text" class="form-control" id="state" 
+                           name="state" value="{{ profile.state }}" disabled>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="postal_code" class="form-label">Postal Code</label>
+                    <input type="text" class="form-control" id="postal_code" 
+                           name="postal_code" value="{{ profile.postal_code }}" disabled>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="tax_id" class="form-label">Tax ID</label>
+                    <input type="text" class="form-control" id="tax_id" 
+                           name="tax_id" value="{{ profile.tax_id }}" disabled>
+                </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="mb-3">
+                <label for="notes" class="form-label">Notes</label>
+                <textarea class="form-control" id="notes" name="notes" 
+                          rows="4" disabled>{{ profile.notes }}</textarea>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="text-end mt-4">
+                <button type="submit" class="btn btn-success d-none" id="saveProfileBtn">
+                    Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    const form = $('#enterpriseProfileForm');
+    const editBtn = $('#editProfileBtn');
+    const saveBtn = $('#saveProfileBtn');
+    const inputs = form.find('input, textarea');
+
+    editBtn.click(function() {
+        if (editBtn.text() === 'Edit Profile') {
+            // Enable editing
+            inputs.prop('disabled', false);
+            editBtn.text('Cancel');
+            editBtn.removeClass('btn-primary').addClass('btn-danger');
+            saveBtn.removeClass('d-none');
+        } else {
+            // Disable editing
+            inputs.prop('disabled', true);
+            editBtn.text('Edit Profile');
+            editBtn.removeClass('btn-danger').addClass('btn-primary');
+            saveBtn.addClass('d-none');
+        }
+    });
+
+    // Preview uploaded logo
+    $('#logo').change(function() {
+    const file = this.files[0];
+    if (file) {
+        // Preview the image
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            $('#logoPreview').attr('src', e.target.result);
+        };
+        reader.readAsDataURL(file);
+
+        // Upload the logo using fetch
+        const formData = new FormData();
+        formData.append('logo', file);
+
+        fetch('{{ url_for("upload_enterprise_logo") }}', { 
+            method: 'POST',
+            body: formData,
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(errData => { // Parse JSON for error message
+                    throw new Error(errData.message || 'Network response was not ok');
+                });
+            }
+            return response.json(); // Parse JSON for success
+        })
+        .then(data => {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: data.message,
+                showConfirmButton: false,
+                timer: 1500
+            }).then(() => {
+                //  form[0].reset();  // Removed, was causing error.  No form
+                location.reload();
+            });
+        })
+        .catch(error => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: error.message || 'Something went wrong!', // Use the parsed error message
+            });
+        });
+    }
+});
+
+ form.submit(function(e) {
+    e.preventDefault();
+
+    // Collect form data as JSON
+    const formData = {
+        company_name: $('#company_name').val(),
+        registration_number: $('#registration_number').val(),
+        address: $('#address').val(),
+        state: $('#state').val(),
+        postal_code: $('#postal_code').val(),
+        city: $('#city').val(),
+        notes: $('#notes').val(),
+        website: $('#website').val(),
+        phone: $('#phone').val(),
+        email: $('#email').val(),
+        business_type: $('#business_type').val(),
+        tax_id: $('#tax_id').val()
+    };
+
+    // Send Fetch request
+    fetch('{{ url_for("update_enterprise_profile") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(errorData => {
+                throw new Error(errorData.message || 'Failed to update profile');
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: data.message,
+            showConfirmButton: false,
+            timer: 1500
+        }).then(() => {
+            disableEditing();  // Disable editing mode
+        });
+    })
+    .catch(error => {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: error.message || 'Something went wrong!'
+        });
+    });
+});
+ 
+    function disableEditing() {
+        inputs.prop('disabled', true);
+        editBtn.text('Edit Profile');
+        editBtn.removeClass('btn-danger').addClass('btn-primary');
+        saveBtn.addClass('d-none');
+    }
+});
+</script>
+{% endblock %}

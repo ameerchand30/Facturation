@@ -1,0 +1,190 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}Dashboard - {{ enterprise.company_name }}{% endblock %}
+
+{% block content %}
+<div class="wrapper wrapper-content">
+    <div class="row">
+        <div class="col-lg-3">
+            <div class="ibox">
+                <div class="ibox-title">
+                    <span class="label label-success pull-right period-label">{{ metrics.period|title }}</span>
+                    <h5>Income</h5>
+                </div>
+                <div class="ibox-content">
+                    <h1 class="no-margins income-value">€{{ "%.2f"|format(metrics.total_income) }}</h1>
+                    <small>Total income</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="ibox">
+                <div class="ibox-title">
+                    <span class="label label-info pull-right period-label">{{ metrics.period|title }}</span>
+                    <h5>Orders</h5>
+                </div>
+                <div class="ibox-content">
+                    <h1 class="no-margins orders-value">{{ metrics.total_orders }}</h1>
+                    <small>Total orders</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox">
+                <div class="ibox-title">
+                    <h5>Orders & Income Analysis</h5>
+                    <div class="pull-right">
+                        <div class="btn-group period-selector">
+                            <button type="button" class="btn btn-xs btn-white {% if metrics.period == 'today' %}active{% endif %}" data-period="today">Today</button>
+                            <button type="button" class="btn btn-xs btn-white {% if metrics.period == 'monthly' %}active{% endif %}" data-period="monthly">Monthly</button>
+                            <button type="button" class="btn btn-xs btn-white {% if metrics.period == 'annual' %}active{% endif %}" data-period="annual">Annual</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="ibox-content">
+                    <div id="dashboard-chart" style="height: 350px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    async function fetchDashboardData(period) {
+        try {
+            // Show loading
+            Swal.fire({
+                title: 'Loading...',
+                text: 'Fetching dashboard data',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            const response = await fetch(`/enterprise/dashboard?period=${period}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const data = await response.json();
+            
+            // Close loading indicator
+            Swal.close();
+
+            // Update UI with new data
+            updateChart(data.chart_data);
+            updateMetrics(data.metrics);
+            
+            // Update active period button
+            document.querySelectorAll('.period-selector button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`.period-selector button[data-period="${period}"]`).classList.add('active');
+
+            // Show success message
+            Swal.fire({
+                icon: 'success',
+                title: 'Updated!',
+                text: `Dashboard data updated for ${period} period`,
+                timer: 1500,
+                showConfirmButton: false
+            });
+
+        } catch (error) {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: `Failed to fetch dashboard data!,${error.message}`
+            });
+        }
+    }
+
+    // Initialize with monthly data
+    fetchDashboardData('monthly');
+
+    // Handle period selection
+    document.querySelectorAll('.period-selector button').forEach(button => {
+        button.addEventListener('click', function() {
+            const period = this.dataset.period;
+            fetchDashboardData(period);
+        });
+    });
+
+    function updateChart(data) {
+        if (!data || data.length === 0) {
+            document.getElementById('dashboard-chart').innerHTML = 
+                '<div class="text-center p-5">No data available for selected period</div>';
+            return;
+        }
+
+        const trace1 = {
+            x: data.map(d => d.date),
+            y: data.map(d => d.orders),
+            name: 'Orders',
+            type: 'bar',
+            marker: { color: '#1ab394' }
+        };
+
+        const trace2 = {
+            x: data.map(d => d.date),
+            y: data.map(d => d.income),
+            name: 'Income',
+            type: 'scatter',
+            yaxis: 'y2',
+            line: { color: '#1C84C6' }
+        };
+
+        const layout = {
+            title: 'Orders & Income Over Time',
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            yaxis: {
+                title: 'Number of Orders',
+                titlefont: {color: '#1ab394'},
+                tickfont: {color: '#1ab394'},
+                gridcolor: '#e7eaec'
+            },
+            yaxis2: {
+                title: 'Income (€)',
+                titlefont: {color: '#1C84C6'},
+                tickfont: {color: '#1C84C6'},
+                overlaying: 'y',
+                side: 'right',
+                gridcolor: '#e7eaec'
+            },
+            showlegend: true,
+            legend: {
+                x: 0,
+                y: 1.2
+            }
+        };
+
+        Plotly.newPlot('dashboard-chart', [trace1, trace2], layout, {responsive: true});
+    }
+
+    function updateMetrics(metrics) {
+        document.querySelector('.income-value').textContent = `€${metrics.total_income.toFixed(2)}`;
+        document.querySelector('.orders-value').textContent = metrics.total_orders;
+        document.querySelectorAll('.period-label').forEach(label => {
+            label.textContent = metrics.period.charAt(0).toUpperCase() + metrics.period.slice(1);
+        });
+    }
+});
+</script>
+{% endblock %}

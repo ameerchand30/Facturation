@@ -1,0 +1,124 @@
+.invoice-container {
+    background-color: #ffffff;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    padding: 40px;
+    margin-top: 40px;
+    margin-bottom: 40px;
+    border-radius: 8px;
+}
+.invoice-header {
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 20px;
+    margin-bottom: 30px;
+}
+.invoice-title h2 {
+    color: #3498db;
+    font-weight: 600;
+    font-size: 28px;
+}
+.company-details {
+    margin-bottom: 2rem;
+}
+.company-logo {
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+.company-logo img {
+    max-height: 100px;
+    max-width: 200px;
+    object-fit: contain;
+}
+.default-logo {
+    width: 100px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    color: #6c757d;
+}
+.company-name {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 1rem;
+}
+.company-address {
+    line-height: 1.6;
+    color: #555;
+}
+
+.company-address i {
+    width: 20px;
+    color: #3498db;
+    margin-right: 5px;
+}
+
+
+.panel {
+    border: none;
+    box-shadow: 0 0 15px rgba(0,0,0,0.05);
+}
+.panel-heading {
+    background-color: #3498db !important;
+    color: white !important;
+    border-radius: 5px 5px 0 0;
+    padding: 15px;
+}
+.panel-title {
+    font-weight: 600;
+    font-size: 18px;
+}
+.table {
+    margin-bottom: 0;
+}
+.table > thead > tr > td {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    padding: 15px;
+    border-bottom: 2px solid #3498db;
+}
+.table > tbody > tr > td {
+    padding: 15px;
+    vertical-align: middle;
+}
+.amount {
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+}
+.total-row {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+.total-section {
+    border-top: 2px solid #3498db;
+    margin-top: 20px;
+    padding-top: 20px;
+}
+.payment-info {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 5px;
+    margin-top: 30px;
+}
+.payment-info h4 {
+    color: #3498db;
+    margin-bottom: 15px;
+}
+address {
+    line-height: 1.8;
+}
+.invoice-meta {
+    color: #7f8c8d;
+    font-size: 14px;
+    margin-top: 20px;
+}
+@media print {
+    .invoice-container {
+        box-shadow: none;
+        margin: 0;
+        padding: 0;
+    }
+}
+

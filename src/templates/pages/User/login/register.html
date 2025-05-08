@@ -1,0 +1,61 @@
+{% extends "pages/User/userComponents/layout.html" %}
+{% block title %}Welcome to Facturaization{% endblock %}
+{% block extra_css %}
+{% endblock %}
+{% block user_content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="text-center">Register</h2>
+                </div>
+                <div class="card-body">
+                    <form action="dashboard" method="post">
+                        <div class="form-group">
+                            <label for="companyName">Company name</label>
+                            <input type="text" class="form-control" id="companyName" name="companyName" placeholder="Enter company Name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="companyadress">Company adress</label>
+                            <input type="text" class="form-control" id="companyadress" name="companyadress" placeholder="Enter company address" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="companySiretNo">Company Siret No</label>
+                            <input type="text" class="form-control" id="companySiretNo" name="companySiretNo" placeholder="Enter company Siret No." required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email address</label>
+                            <input type="email" class="form-control" id="email" name="email" placeholder="Enter email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="confirmPassword">Confirm your password</label>
+                            <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Register</button>
+                    </form>
+                    <p class="text-center mt-3">Already have an account? <a href="/login">Login</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+    const password = document.getElementById("password");
+    const confirmPassword = document.getElementById("confirmPassword");
+
+    confirmPassword.addEventListener("input", () => {
+        if (password.value !== confirmPassword.value) {
+            confirmPassword.setCustomValidity("Passwords do not match");
+        } else {
+            confirmPassword.setCustomValidity("");
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,585 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %} {% if invoice %}Update{% else %}Create{% endif %} Invoice {% endblock %}
+
+    {% block extra_css %}
+        <link rel="stylesheet" href="{{ url_for('static', path='/css/client.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', path='/css/facture.css') }}">
+        <!-- Add jQuery UI CSS -->
+        <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+        <style>
+            .ui-autocomplete {
+                max-height: 200px;
+                overflow-y: auto;
+                overflow-x: hidden;
+                z-index: 1000;
+            }
+        </style>
+    {% endblock %}
+
+{% block content %}
+
+
+<div class="container">
+    <div class="scrollable-container">
+        <form action="{{ url_for('update_invoice', invoice_id=invoice.id) if mode == 'edit' else url_for('create_invoice') }}" method="post">
+                     <!-- Form Actions -->
+            <div class="form-actions">
+                <div class="text-right">
+                    <button type="button" class="btn btn-default">Cancel</button>
+                    <button type="submit" class="btn btn-primary">{% if invoice %}Update{% else %}Create{% endif %} Invoice</button>
+                </div>
+            </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="panel panel-default">
+                            <div class="panel-body">
+                            
+                                <div class="form-group">
+                                    <label for="customerSearch">Search Customer</label>
+                                    <div class="input-group">
+                                        <input type="text" id="customerSearch" name="customerSearch" class="form-control" placeholder="Search for a customer..." value="{{ invoice.client.name if invoice else '' }}">
+                                        <input type="hidden" id="customerId" name="customerId" value="{{ invoice.client_id if invoice else '' }}">
+                                        <span class="input-group-addon">
+                                            <i class="fa fa-times"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Client Email</label>
+                                    <div class="input-group">
+                                        <input type="text" id="customerEmail" class="form-control" value="{{ invoice.client.email if invoice else '' }}">
+                                        <span class="input-group-addon">
+                                        <i class="fa fa-times"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="enterpriseSelect">Select Enterprise</label>
+                                    <select id="enterpriseSelect" name="enterpriseId" class="form-control" required>
+                                        <option value="">Select an enterprise...</option>
+                                            {% if enterprise_data %}
+                                                {% for enterprise in enterprise_data %}
+                                                    <option value="{{ enterprise.id }}"> {{ enterprise.name }} </option>
+                                                {% endfor %}
+                                            {% endif %}
+                                    </select>
+                                </div>
+                                <div class="help-block">
+                                    <a href="addClient"><i class="fa fa-pencil"></i> Edit Client</a> /
+                                    <a href="client">View in Portal</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="panel panel-default">
+                            <div class="panel-body">
+                                <div class="form-group">
+                                    <label>Invoice Date</label>
+                                    <input type="date" id="creationDate" name="creationDate" class="form-control" value="{{ invoice.creation_date.strftime('%Y-%m-%d') if invoice else today.strftime('%Y-%m-%d')}}">
+                                </div>
+                                <div class="form-group">
+                                    <label>Due Date</label>
+                                    <input type="date" id="paidDate" name="paidDate" class="form-control" value="{{ invoice.due_date.strftime('%Y-%m-%d') if invoice else today.strftime('%Y-%m-%d') }}">
+                                </div>
+                                <div class="form-group">
+                                    <label>Partial/Deposit</label>
+                                    <input type="number" id="Partial_amount" name="partial_amount" class="form-control" value="{{ invoice.partial_amount if invoice else '' }}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="panel panel-default">
+                            <div class="panel-body">
+                                <div class="form-group">
+                                    <label>Invoice #</label>
+                                    <input type="text" id="specialNo" name="specialNo" class="form-control" value="{{ invoice.special_invoice_no if invoice else '' }}">
+                                </div>
+                                <div class="form-group">
+                                    <label>Notes #</label>
+                                    <input type="text" id="Notes" name="Notes"  class="form-control" value="{{ invoice.description if invoice else '' }}">
+                                </div>
+                                <div class="form-group">
+                                    <div class="row">
+                                        <div class="col-xs-6">
+                                            <label>TVA</label>
+                                            <input type="number" id="Tax" name="tax" class="form-control" value="{{ invoice.tax if invoice else '20' }}">
+                                        </div>
+                                        <div class="col-xs-6">
+                                            <label>Payment Mode</label>
+                                            <select id="Payment_method" name="payment_method" class="form-control" required>
+                                                <option value="">-- Sélectionnez --</option> 
+                                                <option value="Cash">Cash</option>
+                                                <option value="Credit Card">Credit Card</option>
+                                                <option value="Bank Transfer">Bank Transfer</option>
+                                                <option value="PayPal">PayPal</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div> <!-- /.row -->
+        </from>
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>ITEM</th>
+                        <th>DESCRIPTION</th>
+                        <th>UNIT COST</th>
+                        <th>QUANTITY</th>
+                        <th>LINE TOTAL</th>
+                        <th>ACTION</th>
+                    </tr>
+                </thead>
+                <tbody id="invoiceItemsmain">
+                    <!-- this row will come either it invoice exist it's also obligation to create invoice -->
+                    <tr id="row_0">
+                        <td>
+                            <div class="form-group">  
+                                <input type="text" id="productSearch_0" name="productSearch" class="form-control productSearch" placeholder="Search for a product...">
+                                <input type="hidden" id="productId_0" name="productId" value="{{ invoiceItems.productId if invoiceItems else '' }}">
+                            </div>
+                        </td>
+                        <td>
+                            <div class="form-group">                                        
+                                <input type="text" id="productDescription_0" name="productDescription" class="form-control" placeholder="Product Description..." readonly>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="form-group">                                        
+                                <input type="number" id="productUnitPri_0" name="productUnitPri" class="form-control" placeholder="P/U">
+                            </div>
+                        </td>
+                        <td>
+                            <div class="form-group">                                        
+                                <input type="number" id="productQty_0" name="productQty" class="form-control" placeholder="#" value="1">                                
+                            </div>
+                        </td>
+                        <td>
+                            <div class="form-group">
+                                <input type="number" id="productTotal_0" name="productTotal" class="form-control" placeholder="Total Prix" readonly>                                
+                            </div>
+                        </td>
+                        <td><button type="button" class="btn btn-danger remove-item-btn">Remove</button></td>
+                    </tr>
+                {% if invoice and mode == 'edit' %}
+                    {% for item in invoice.invoice_items %}
+                        <tr id="row_{{ loop.index }}">
+                            <td>
+                                <div class="form-group"> 
+                                    <input type="text" id="productSearch_{{ loop.index }}" name="productSearch" class="form-control productSearch" placeholder="{{ item.product.name if item else 'P' }}" value="{{ item.product.name  }}">
+                                    <input type="hidden" id="productId_{{ loop.index }}" name="productId" value="{{ item.product.id if item else '' }}">
+                                </div>
+                            </td>
+                            <td>
+                                <div class="form-group">                                        
+                                    <input type="text" id="productDescription_{{ loop.index }}" name="productDescription" class="form-control" placeholder="Product Description..." readonly value="{{ item.product.description }}">
+                                </div>
+                            </td>
+                            <td>
+                                <div class="form-group">                                        
+                                    <input type="number" id="productUnitPri_{{ loop.index }}" name="productUnitPri" class="form-control" placeholder="P/U" value="{{ item.unit_price }}">
+                                </div>
+                            </td>
+                            <td>
+                                <div class="form-group">                                        
+                                    <input type="number" id="productQty_{{ loop.index }}" name="productQty" class="form-control" placeholder="#" value="{{ item.quantity }}">                                
+                                </div>
+                            </td>
+                            <td>
+                                <div class="form-group">
+                                    <input type="number" id="productTotal_{{ loop.index }}" name="productTotal" class="form-control" placeholder="Total Prix" readonly>                                
+                                </div>
+                            </td>
+                            <td><button type="button" class="btn btn-danger remove-item-btn">Remove</button></td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+                </tbody>
+            </table>
+            <button class="btn btn-primary add-item-btn" type="button">
+                <span class="glyphicon glyphicon-plus"></span> Add Item
+            </button>
+        </div>
+    </div>
+    <!-- invoice to show live invoice Data -->
+<div class="container">
+    <div class="invoice-container">
+        <div class="invoice-header">
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="invoice-title">
+                        <h2>
+                            <i class="fa fa-file-text-o"></i> FACTURE N0 ���
+                        </h2>
+                        <h3 class="pull-right" id="currentDateTime">
+                            <i class="fa fa-calendar"></i> 11 Decembre 2024
+                        </h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row company-details">
+            <div class="col-xs-6">
+                <!-- Company Logo -->
+                <div class="company-logo mb-3">
+                    {% if enterprise_profile.logo %}
+                        <img src="{{ url_for('static', path='img/enterprise_profile_images/' + enterprise_profile.logo) }}" 
+                            alt="{{ enterprise_profile.company_name }}" 
+                            class="img-fluid" 
+                            style="max-height: 100px;">
+                    {% else %}
+                        <div class="default-logo">
+                            <i class="fa fa-building fa-3x"></i>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Company Details -->
+                <div class="company-name">{{ enterprise_profile.company_name }}</div>
+                <address class="company-address">
+                    {% if enterprise_profile.name %}
+                        <i class="fa fa-user"></i> {{ enterprise_profile.name }}<br>
+                    {% endif %}
+                    
+                    {% if enterprise_profile.address %}
+                        <i class="fa fa-map-marker"></i> {{ enterprise_profile.address }}<br>
+                        {{ enterprise_profile.postal_code }} {{ enterprise_profile.city }}<br>
+                    {% endif %}
+                    
+                    {% if enterprise_profile.registration_number %}
+                        <i class="fa fa-building"></i> RCS : {{ enterprise_profile.registration_number }}<br>
+                    {% endif %}
+                    
+                    {% if enterprise_profile.phone %}
+                        <i class="fa fa-phone"></i> Tel : {{ enterprise_profile.phone }}<br>
+                    {% endif %}
+                    
+                    {% if enterprise_profile.email %}
+                        <i class="fa fa-envelope"></i> {{ enterprise_profile.email }}<br>
+                    {% endif %}
+                    
+                    {% if enterprise_profile.website %}
+                        <i class="fa fa-globe"></i> {{ enterprise_profile.website }}
+                    {% endif %}
+                </address>
+            </div>
+            <div class="col-xs-6 text-right">
+                <div class="company-name">Factur���:</div>
+                <address>
+                    <strong>AC RENOVATION</strong><br>
+                    75 RUE DE LOURMEL<br>
+                    75015 PARIS
+                </address>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">
+                            <i class="fa fa-list-alt"></i> Detail de la prestation
+                        </h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <td><strong>Product Name</strong></td>
+                                        <td class="text-center"><strong>Prix unitaire H.T</strong></td>
+                                        <td class="text-right"><strong>Total H.T</strong></td>
+                                    </tr>
+                                </thead>
+                                <tbody id="invoice_preview">
+                                    <tr>
+                                        <td> Reparation de boîte vitesse, avec diverse piece necessaire fournies par vos soins</td>
+                                        <td class="text-center amount">1,266.66 €</td>
+                                        <td class="text-right amount">1,266.66 €</td>
+                                    </tr>
+                                    <!-- table bottom for TVA -->
+                                    <tr class="total-row">
+                                        <td class="thick-line"></td>
+                                        <td class="thick-line text-center" ><strong>Total H.T</strong></td>
+                                        <td class="thick-line text-right amount" id="total-ht">1,266.66 €</td>
+                                    </tr>
+                                    <tr class="total-row">
+                                        <td class="no-line"></td>
+                                        <td class="no-line text-center" ><strong>T.V.A 20%</strong></td>
+                                        <td class="no-line text-right amount" id="total-tva">253.33 €</td>
+                                    </tr>
+                                    <tr class="total-row">
+                                        <td class="no-line"></td>
+                                        <td class="no-line text-center"><strong>Total T.T.C</strong></td>
+                                        <td class="no-line text-right amount" id="total-ttc"><strong>1,519.99 €</strong></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="payment-info">
+            <h4><i class="fa fa-credit-card"></i> Informations de paiement</h4>
+            <div class="row">
+                <div class="col-xs-6">
+                    <strong>Mode de reglement:</strong> virement<br>
+                    <strong>Date de reglement:</strong> 16/12/2024
+                </div>
+            </div>
+        </div>
+        
+        <div class="invoice-meta text-center">
+            <small>Cette facture a generate ectroniquement et est valide sans signature.</small>
+        </div>
+    </div>
+</div>
+</div> <!-- /.container -->
+
+{% endblock %}
+
+
+{% block extra_js %}
+<script id="customerData" type="application/json">
+    {{ customer_data | tojson }}
+</script>
+<script id="productData" type="application/json">
+    {{ product_data | tojson }}
+</script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        const customerData = JSON.parse(document.getElementById('customerData').textContent);
+        const productData = JSON.parse(document.getElementById('productData').textContent);
+
+        function updateDateTime() {
+            const now = new Date();
+            const options = { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric', 
+                    hour: '2-digit', 
+                    minute: '2-digit', 
+                    second: '2-digit' 
+                };
+            const formattedDateTime = now.toLocaleString('fr-FR', options); 
+            document.getElementById('currentDateTime').textContent = formattedDateTime;
+            }   
+
+        updateDateTime(); // Initial display
+        setInterval(updateDateTime, 1000); // Update every second
+
+        $('#customerSearch').autocomplete({
+            source: Object.keys(customerData),
+            select: function(event, ui) {
+                const customer = customerData[ui.item.value];
+                $('#customerId').val(customer.id);
+                $('#customerEmail').val(customer.email);
+                // $('#enterpriseSelect').empty().append('<option value="">Select an enterprise...</option>');
+                // customer.enterprises.forEach(function(enterprise) {
+                //     $('#enterpriseSelect').append('<option value="' + enterprise.id + '">' + enterprise.name + '</option>');
+                // });
+            }
+        });
+        // Remove row button
+        $(document).on('click', '.remove-item-btn', function() {
+            $(this).closest('tr').remove();
+            updateAllRows();
+        });
+         // to submit de form data
+        $('form').on('submit', function(e) {
+            e.preventDefault();
+            const form = $(this);
+            // Collect invoice items
+            let invoiceItems = [];
+            $('#invoiceItemsmain tr').each(function() {
+                const row = $(this);
+                const productId = row.find('[name="productId"]').val();
+                if (productId) {
+                    invoiceItems.push({
+                        product_id: parseInt(productId),
+                        unit_price: parseFloat(row.find('[name="productUnitPri"]').val()),
+                        quantity: parseFloat(row.find('[name="productQty"]').val()),
+                    });
+                }
+            });
+            // Build complete JSON data
+            const jsonData = {
+                client_id: parseInt($('#customerId').val()),
+                enterprise_id: parseInt($('#enterpriseSelect').val()) || 0,
+                creation_date: $('#creationDate').val(),
+                due_date: $('#paidDate').val() || null,
+                partial_amount: parseFloat($('#Partial_amount').val()) || 0,
+                total_amount: parseFloat($('#Partial_amount').val()) || 0,
+                special_invoice_no: $('#specialNo').val(),
+                description: $('#Notes').val(),
+                tax: parseFloat($('#Tax').val()) || 0,
+                payment_method: $('#Payment_method').val() || 'Cash', 
+                invoice_items: invoiceItems
+            };
+            // Debug output
+            fetch(form.attr('action'), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(jsonData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: data.message,
+                        showConfirmButton: false,
+                        timer: 1500
+                    }).then(() => {
+                        window.location.href = '/invoices/read';
+                    });
+                } else {
+                    throw new Error(data.message);
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.message
+                });
+            });
+        });
+
+    let rowCounter = "{{ rowCounter|default(0) }}";
+        rowCounter = parseInt(rowCounter);
+    function rowIncrement(){
+        rowCounter++;
+    }   
+    // Bind autocomplete to all product search fields
+    function bindProductAutocomplete() {
+        $('.productSearch').autocomplete({
+            source: Object.keys(productData),
+            select: function(event, ui) {
+                const product = productData[ui.item.value];
+                const row = $(this).closest('tr');
+                row.find('[name="productId"]').val(product.id);
+                row.find('[name="productDescription"]').val(product.description);
+                row.find('[name="productUnitPri"]').val(product.unit_price);
+                calculateTotal(row);
+                updateAllRows();
+            }
+        });
+    }
+    // Initial binding
+    bindProductAutocomplete();
+    // Add new row with autocomplete
+    $('.add-item-btn').click(function() {
+        console.log(rowCounter);
+        // const newRow = $('#row_' + rowCounter).clone();
+        const newRow = $('#row_0').clone();
+        updateAllRows();
+        rowIncrement();
+        // Update rows IDs and clear values
+        newRow.attr('id', 'row_' + rowCounter);
+            newRow.find('input').each(function() {
+                // to clear the row_0
+                if (!$(this).is('[name="productQty"]')) {
+                    $(this).val('');
+                } else {
+                    $(this).val('1');
+                }
+                // to change the IDs of input in the row
+                const oldId = $(this).attr('id');
+                const baseName = $(this).attr('name');
+                $(this).attr('id', baseName + '_' + rowCounter);
+            });
+        $('#invoiceItemsmain').append(newRow);
+        bindProductAutocomplete();
+    });
+          // Calculate total for a row
+    function calculateTotal(row) {
+        const quantity = parseFloat(row.find('[name="productQty"]').val()) || 0;
+        const unitPrice = parseFloat(row.find('[name="productUnitPri"]').val()) || 0;
+        row.find('[name="productTotal"]').val((quantity * unitPrice).toFixed(2));
+    }
+
+    let totalHT = 0;
+    let totalTVA = 0;
+    let totalTTC = 0;
+
+    // Monitor changes in main invoice table
+    $('#invoiceItemsmain').on('change', '[name="productQty"], [name="productUnitPri"]', function() {
+        updateAllRows();
+        calculateTotal($(this).closest('tr'));
+    });
+
+    function updateAllRows() {
+        totalHT = 0;
+        let invoiceRows = '';
+
+        // Process each row in the main table
+        $('#invoiceItemsmain tr').each(function() {
+            const row = $(this);
+            const productName = row.find('.productSearch').val();
+            const productDesc = row.find('[name="productDescription"]').val();
+            const unitPrice = parseFloat(row.find('[name="productUnitPri"]').val()) || 0;
+            const quantity = parseFloat(row.find('[name="productQty"]').val()) || 0;
+            const lineTotal = unitPrice * quantity;
+
+            if (productName && unitPrice && quantity) {
+                totalHT += lineTotal;
+                invoiceRows += `
+                    <tr>
+                        <td class="text-left">${productName}, ${productDesc}</td>
+                        <td class="text-center amount">${unitPrice.toFixed(2)} * ${quantity} €</td>
+                        <td class="text-right amount">${lineTotal.toFixed(2)} €</td>
+                    </tr>
+                `;
+            }
+        });
+            // Update totals
+            totalTVA = totalHT * 0.20;
+            totalTTC = totalHT + totalTVA;
+            invoiceRows += `
+                <tr class="total-row">
+                    <td class="thick-line"></td>
+                    <td class="thick-line text-center" ><strong>Total H.T</strong></td>
+                    <td class="thick-line text-right amount" id="total-ht"> ${totalHT.toFixed(2)} €</td>
+                </tr>
+                <tr class="total-row">
+                    <td class="no-line"></td>
+                    <td class="no-line text-center" ><strong>T.V.A 20%</strong></td>
+                    <td class="no-line text-right amount" id="total-tva"> ${totalTVA.toFixed(2)} €</td>
+                </tr>
+                <tr class="total-row">
+                    <td class="no-line"></td>
+                    <td class="no-line text-center"><strong>Total T.T.C</strong></td>
+                    <td class="no-line text-right amount" id="total-ttc"><strong> ${totalTTC.toFixed(2)} €</strong></td>
+                </tr>
+            `;
+            // Update invoice preview
+            $('#invoice_preview').html(invoiceRows);
+            $('#total-ht').text(totalHT.toFixed(2) + ' €');
+            $('#total-tva').text(totalTVA.toFixed(2) + ' €');
+            $('#total-ttc').text(totalTTC.toFixed(2) + ' €');
+        }
+
+    }); // end of load function 
+
+
+</script>
+
+{% endblock %}

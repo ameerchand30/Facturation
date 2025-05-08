@@ -1,0 +1,240 @@
+{% extends "pages/User/userComponents/layout.html" %}
+{% block title %}Welcome to Facturaization{% endblock %}
+{% block extra_css %}
+
+{% endblock %}
+
+{% block user_content %}
+    
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h1 id="hero-title">Smart Invoicing for Smart Businesses</h1>
+                    <p id="hero-text">Generate professional invoices in seconds. Streamline your billing process and get paid faster with factorization.</p>
+                    <div id="hero-cta">
+                        <a href="#" class="btn btn-primary btn-lg">Try For Free</a>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="hero-image" id="hero-image">
+                        <video autoplay muted loop class="floating">
+                            <source src="{{ url_for('static', path='videos/ThemeVideo.mp4') }}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="container">
+            <div class="section-title" id="features-title">
+                <h2>Powerful Features</h2>
+                <p>Everything you need to create, send, and track professional invoices</p>
+            </div>
+            <div class="row equal-height">
+                <div class="col-md-4 col-sm-6 mb-30">
+                    <div class="feature-box">
+                        <div class="feature-icon">
+                            <i class="fa fa-bolt"></i>
+                        </div>
+                        <h3>Lightning Fast</h3>
+                        <p>Generate professional invoices in seconds with our intuitive interface and templates.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6 mb-30">
+                    <div class="feature-box">
+                        <div class="feature-icon">
+                            <i class="fa fa-refresh"></i>
+                        </div>
+                        <h3>Recurring Invoices</h3>
+                        <p>Set up automatic recurring invoices for your regular clients and subscriptions.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6 mb-30">
+                    <div class="feature-box">
+                        <div class="feature-icon">
+                            <i class="fa fa-mobile"></i>
+                        </div>
+                        <h3>Mobile Friendly</h3>
+                        <p>Create and send invoices on the go with our fully responsive mobile experience.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6 mb-30">
+                    <div class="feature-box">
+                        <div class="feature-icon">
+                            <i class="fa fa-bar-chart"></i>
+                        </div>
+                        <h3>Detailed Reports</h3>
+                        <p>Track payments, overdue invoices, and revenue with customizable reports.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6 mb-30">
+                    <div class="feature-box">
+                        <div class="feature-icon">
+                            <i class="fa fa-plug"></i>
+                        </div>
+                        <h3>Seamless Integration</h3>
+                        <p>Connect with your favorite accounting software and payment processors.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6 mb-30">
+                    <div class="feature-box">
+                        <div class="feature-icon">
+                            <i class="fa fa-lock"></i>
+                        </div>
+                        <h3>Secure & Compliant</h3>
+                        <p>Bank-level security and compliance with tax regulations worldwide.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Testimonials Section -->
+    <section class="testimonials" id="testimonials">
+        <div class="container">
+            <div class="section-title" id="testimonials-title">
+                <h2>What Our Customers Say</h2>
+                <p>Join thousands of satisfied businesses using factorization</p>
+            </div>
+            <div class="row equal-height">
+                <div class="col-md-4 mb-30">
+                    <div class="testimonial-box">
+                        <div class="testimonial-text">
+                            "factorization has cut our billing time by 75%. The automated reminders have significantly improved our cash flow."
+                        </div>
+                        <div class="testimonial-author">
+                            <div class="author-avatar">
+                                <img src="/api/placeholder/100/100" alt="Sarah Johnson">
+                            </div>
+                            <div class="author-info">
+                                <h4>Sarah Johnson</h4>
+                                <p>CEO, Design Studio</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-30">
+                    <div class="testimonial-box">
+                        <div class="testimonial-text">
+                            "The customizable templates make our invoices look professional and on-brand. Our clients love the simple payment options."
+                        </div>
+                        <div class="testimonial-author">
+                            <div class="author-avatar">
+                                <img src="/api/placeholder/100/100" alt="Mark Rodriguez">
+                            </div>
+                            <div class="author-info">
+                                <h4>Mark Rodriguez</h4>
+                                <p>Freelance Developer</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-30">
+                    <div class="testimonial-box">
+                        <div class="testimonial-text">
+                            "As a small business owner, factorization has been a game-changer. It's affordable, easy to use, and saves me hours every week."
+                        </div>
+                        <div class="testimonial-author">
+                            <div class="author-avatar">
+                                <img src="/api/placeholder/100/100" alt="Emma Chen">
+                            </div>
+                            <div class="author-info">
+                                <h4>Emma Chen</h4>
+                                <p>Owner, Local Cafe</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-8 col-md-offset-2">
+                    <div id="cta-content">
+                        <h2>Ready to Streamline Your Invoicing?</h2>
+                        <p>Join thousands of businesses that trust factorization for their invoicing needs. Get started with our free 14-day trial - no credit card required.</p>
+                        <div class="cta-buttons">
+                            <a href="#" class="btn btn-primary btn-lg pulse">Start Free Trial</a>
+                            <a href="#" class="btn btn-outline btn-lg" style="margin-left: 10px;">Schedule a Demo</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Smooth scrolling for anchor links
+        $('a[href*="#"]:not([href="#"])').click(function() {
+            if (location.pathname.replace(/^\//, '') == this.pathname.replace(/^\//, '') && location.hostname == this.hostname) {
+                var target = $(this.hash);
+                target = target.length ? target : $('[name=' + this.hash.slice(1) + ']');
+                if (target.length) {
+                    $('html, body').animate({
+                        scrollTop: target.offset().top - 70
+                    }, 1000);
+                    return false;
+                }
+            }
+        });
+        
+        // Initialize animations
+        $('#hero-title').css({opacity: 0}).animate({opacity: 1}, 800);
+        $('#hero-text').css({opacity: 0}).delay(200).animate({opacity: 1}, 800);
+        $('#hero-cta').css({opacity: 0}).delay(400).animate({opacity: 1}, 800);
+        $('#hero-image').css({opacity: 0}).delay(600).animate({opacity: 1}, 1000);
+        
+        // Animate sections on scroll
+        $(window).scroll(function() {
+            var windowBottom = $(this).scrollTop() + $(this).innerHeight();
+            
+            // Features section
+            var featuresTop = $('#features').offset().top;
+            if (windowBottom > featuresTop) {
+                $('#features-title').css({opacity: 1});
+                $('.feature-box').each(function(index) {
+                    $(this).delay(100 * index).animate({opacity: 1}, 600);
+                });
+            }
+            
+            // Testimonials section
+            var testimonialsTop = $('#testimonials').offset().top;
+            if (windowBottom > testimonialsTop) {
+                $('#testimonials-title').css({opacity: 1});
+                $('.testimonial-box').each(function(index) {
+                    $(this).delay(100 * index).animate({opacity: 1}, 600);
+                });
+            }
+            
+            // CTA section
+            var ctaTop = $('.cta-section').offset().top;
+            if (windowBottom > ctaTop) {
+                $('#cta-content').animate({opacity: 1}, 800);
+            }
+        });
+        
+        // Initialize animations for the demo
+        $('#features-title').css({opacity: 1});
+        $('.feature-box').css({opacity: 1});
+        $('#testimonials-title').css({opacity: 1});
+        $('.testimonial-box').css({opacity: 1});
+        $('#cta-content').css({opacity: 1});
+    });
+</script>
+{% endblock %}
+
+

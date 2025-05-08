@@ -1,0 +1,19 @@
+<!-- this is a layout file for the user components pages i.e landing page, about us, contact us, etc.
+ it is used to extend the base layout and include the newheader and newfooter for landing page -->
+
+{% extends "layouts/base.html" %}
+
+{% block template_css %} 
+
+<link rel="stylesheet" href="{{ url_for('static', path='/css/user/landingPage.css') }}">
+{% endblock %}
+
+
+{% block content %}
+{% include "pages/User/userComponents/header.html" %}
+    {% block user_content %}
+    {% endblock %}
+    {% include "pages/User/userComponents/footer.html" %}
+{% endblock %}
+
+

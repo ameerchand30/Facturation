@@ -1,0 +1,166 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %} Invoice #{{ invoice.id }} {% endblock %}
+
+    {% block extra_css %}
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/facture.css') }}">
+    {% if not pdf_mode %}  
+    {% endif %}
+    {% endblock %}
+
+{% block content %}
+
+  <!-- Add PDF download button -->
+  {% if not pdf_mode %}
+  <div class="text-center mt-4">
+      <a href="{{ url_for('generate_pdf', invoice_id=invoice.id) }}" class="btn btn-primary">
+          Download PDF
+      </a>
+  </div>
+  {% endif %}
+    <div class="container" id ="pdf-container">
+        <div class="invoice-container">
+            <div class="invoice-header">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div class="invoice-title">
+                            <h2>
+                                <i class="fa fa-file-text-o"></i> FACTURE N0 {{ invoice.id }}
+                            </h2>
+                            <h3 class="pull-right">
+                                <i class="fa fa-calendar"></i> {{ invoice.creation_date }}
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row company-details">
+                <div class="col-xs-6">
+                                <!-- Company Logo -->
+                    <div class="company-logo mb-3">
+                        {% if enterprise_profile.logo %}
+                            <img src="{{ url_for('static', path='img/enterprise_profile_images/' + enterprise_profile.logo) }}" 
+                                alt="{{ enterprise_profile.company_name }}" 
+                                class="img-fluid" 
+                                style="max-height: 100px;">
+                        {% else %}
+                            <div class="default-logo">
+                                <i class="fa fa-building fa-3x"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Company Details -->
+                    <div class="company-name">{{ enterprise_profile.company_name }}</div>
+                    <address class="company-address">
+                        {% if enterprise_profile.name %}
+                            <i class="fa fa-user"></i> {{ enterprise_profile.name }}<br>
+                        {% endif %}
+                        
+                        {% if enterprise_profile.address %}
+                            <i class="fa fa-map-marker"></i> {{ enterprise_profile.address }}<br>
+                            {{ enterprise_profile.postal_code }} {{ enterprise_profile.city }}<br>
+                        {% endif %}
+                        
+                        {% if enterprise_profile.registration_number %}
+                            <i class="fa fa-building"></i> RCS : {{ enterprise_profile.registration_number }}<br>
+                        {% endif %}
+                        
+                        {% if enterprise_profile.phone %}
+                            <i class="fa fa-phone"></i> Tel : {{ enterprise_profile.phone }}<br>
+                        {% endif %}
+                        
+                        {% if enterprise_profile.email %}
+                            <i class="fa fa-envelope"></i> {{ enterprise_profile.email }}<br>
+                        {% endif %}
+                        
+                        {% if enterprise_profile.website %}
+                            <i class="fa fa-globe"></i> {{ enterprise_profile.website }}
+                        {% endif %}
+                    </address>
+                </div>
+                <div class="col-xs-6 text-right">
+                    <div class="company-name">Factur {{ invoice.special_invoice_no }}:</div>
+                    <address >
+                        <strong>{{ invoice.enterprises.name }}</strong><br>
+                        {{ invoice.enterprises.address }}<br>
+                        {{ invoice.enterprises.postalCode }} &nbsp; {{ invoice.enterprises.city }}
+                    </address>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">
+                                <i class="fa fa-list-alt"></i> Detail de la prestation
+                            </h3>
+                        </div>
+                        <div class="panel-body">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <td><strong>Désignation du produit</strong></td>
+                                            <td class="text-center"><strong>Prix unitaire H.T</strong></td>
+                                            <td class="text-right"><strong>Total H.T</strong></td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {{ sum }}
+                                        {% for item in invoice.invoice_items %}
+                                        <tr>
+                                            <td>{{ item.product.name  }}</td>
+                                            <td class="text-center amount"> {{item.unit_price}} * {{item.quantity}} €</td>
+                                            <td class="text-right amount">{{item.unit_price * item.quantity}} €</td>
+                                        </tr>
+                                        <!-- <tr>
+                                            <td>Reparation de boîte vitesse, avec diverse piece necessaire fournies par vos soins</td>
+                                            <td class="text-center amount">1,266.66 €</td>
+                                            <td class="text-right amount">1,266.66 €</td>
+                                        </tr> -->
+                                        {% endfor %}
+                                        <tr class="total-row">
+                                            <td class="thick-line"></td>
+                                            <td class="thick-line text-center"><strong>Total H.T</strong></td>
+                                            <td class="thick-line text-right amount">{{ "%.2f"|format(total_ht) }} €</td>
+                                        </tr>
+                                        <tr class="total-row">
+                                            <td class="no-line"></td>
+                                            <td class="no-line text-center"><strong>T.V.A 20%</strong></td>
+                                            <td class="no-line text-right amount">{{ "%.2f"|format(tva) }} €</td>
+                                        </tr>
+                                        <tr class="total-row">
+                                            <td class="no-line"></td>
+                                            <td class="no-line text-center"><strong>Total T.T.C</strong></td>
+                                            <td class="no-line text-right amount"><strong>{{ "%.2f"|format(total_ttc) }} €</strong></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="payment-info">
+                <h4><i class="fa fa-credit-card"></i> Informations de paiement</h4>
+                <div class="row">
+                    <div class="col-xs-6">
+                        <strong>Mode de reglement:</strong> {{ invoice.payment_method }}<br>
+                        <strong>Date de reglement:</strong> {{invoice.due_date}}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="invoice-meta text-center">
+                <small>Cette facture a generate ectroniquement et est valide sans signature.</small>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+{% endblock %}

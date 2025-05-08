@@ -1,0 +1,168 @@
+.page-header {
+    margin: 20px 0;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+.table th {
+    background-color: #337ab7;
+    color: white;
+}
+.table th i {
+    margin-left: 5px;
+}
+.actions-btn {
+    margin-right: 10px;
+}
+.filter-section {
+    margin-bottom: 20px;
+    margin-top: 5px;
+}
+.pagination-section {
+    margin-top: 20px;
+}
+.status-filter {
+    display: inline-block;
+    margin-right: 10px;
+    background: #f8f9fa;
+    padding: 6px 12px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+.status-filter .close {
+    margin-left: 8px;
+    font-size: 14px;
+}
+.filter-group {
+    display: inline-block;
+    margin: 0px 10px 0px 0px;
+    width: 200px;
+    vertical-align: middle;
+}
+/* CSS for addClient.html */
+
+.main-container {
+    height: calc(100vh - 90px); /* Adjust for breadcrumb and padding */
+    padding-bottom: 70px; /* Space for fixed bottom buttons */
+    overflow-y: auto;
+    
+}
+.scrollable-container {
+    height: 100%;
+    overflow-y: auto;
+    padding-right: 15px;
+}
+.card {
+    background: #fff;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+    margin-bottom: 20px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    max-height: 600px; /* Adjust this value as needed */
+}
+
+.card-title {
+    color: #666;
+    font-size: 16px;
+    padding: 15px 20px;
+    border-bottom: 1px solid #eee;
+    background: #fafafa;
+    border-radius: 4px 4px 0 0;
+    margin: 0;
+    flex-shrink: 0;
+}
+.card-body {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    border-radius: 24px;
+    transition: .4s;
+}
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    border-radius: 50%;
+    transition: .4s;
+}
+input:checked + .slider {
+    background-color: #2196F3;
+}
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+.nav-tabs {
+    border-bottom: 1px solid #ddd;
+    padding: 0 20px;
+    background: #fafafa;
+    border-radius: 4px 4px 0 0;
+    flex-shrink: 0;
+}
+.nav-tabs > li > a {
+    margin-right: 2px;
+    border: none;
+    border-radius: 0;
+}
+.nav-tabs > li.active > a,
+.nav-tabs > li.active > a:focus,
+.nav-tabs > li.active > a:hover {
+    border: none;
+    border-bottom: 2px solid #2196F3;
+    background: transparent;
+}
+.form-actions {
+    background: #fff;
+    padding: 15px;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+   
+    margin: 20px 20px;
+}
+.tab-content {
+    padding: 20px;
+}
+/* Custom scrollbar styling */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+.table-responsive {
+    overflow: visible !important;
+}

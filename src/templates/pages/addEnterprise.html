@@ -1,0 +1,104 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}Client page{% endblock %}
+
+    {% block extra_css %}
+           <!-- Add jQuery UI CSS -->
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <style>
+        .ui-autocomplete {
+            max-height: 200px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            z-index: 1000;
+        }
+    </style>
+    {% endblock %}
+
+{% block content %}
+    <div class="container-fluid">
+        <!-- Breadcrumb -->
+        <ol class="breadcrumb">
+            <li><a href="#"><i class="fa fa-home"></i></a></li>
+            <li><a href="#">Enterpirse</a></li>
+            <li class="active">{% if enterprise %}Update{% else %}Add{% endif %} Enterprise</li>
+        </ol>
+        <!-- Form Actions -->
+        <form action="{{ url_for('update_enterprise', enterprise_id=enterprise.id) if enterprise else url_for('create_enterprise') }}" method="post">
+            <div class="form-actions">
+                <div class="text-right">
+                    <button type="button" class="btn btn-default">Cancel</button>
+                    <button type="submit" class="btn btn-primary">{{ "Update enterprise" if enterprise else "Save enterprise"  }}</button>
+                </div>
+            </div>
+            <div class="main-container">
+                <div class="scrollable-container">
+                    {% include "components/cards/addEnterprise.html" %}
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}
+{% block extra_js %}
+<script id="customerData" type="application/json">
+    {{ customer_data | tojson }}
+</script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            const customerData = JSON.parse(document.getElementById('customerData').textContent);
+            console.log('Customer data:', customerData);
+            const customerNames = Object.keys(customerData);
+            $('#customerSearch').autocomplete({
+                source: customerNames,
+                select: function(event, ui) {
+                    const customer = customerData[ui.item.value];
+                    console.log('Customer data:', customer);
+                    $('#customerEmail').val(customer.email);
+                    console.log('Customer_id:', customer.customer_id);
+                    $('#customerId').val(customer.customer_id);
+                  
+                }
+            });
+            $('form').on('submit', function(e) {
+                e.preventDefault();
+                const form = $(this);
+                const formData = new FormData(form[0]);
+                // Convert FormData to JSON object
+                const jsonData = Object.fromEntries(formData);
+                // Submit form using fetch
+                fetch(form.attr('action'), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(jsonData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: data.message,
+                            showConfirmButton: false,
+                            timer: 1500
+                        }).then(() => {
+                            location.reload();
+                        });
+                        form[0].reset();
+                    } else {
+                        throw new Error(data.message);
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: error.message || 'Something went wrong!'
+                    });
+                });
+            });
+        }); // end of ready function 
+    </script>
+{% endblock %}

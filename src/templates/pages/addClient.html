@@ -1,0 +1,105 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}
+    {{ "Update Client" if client else "Add Client" }}
+{% endblock %}
+
+    {% block extra_css %}
+        
+    {% endblock %}
+
+{% block content %}
+    <div class="container-fluid">
+        <!-- Breadcrumb -->
+        <ol class="breadcrumb">
+            <li><a href="#"><i class="fa fa-home"></i></a></li>
+            <li><a href="#">Client</a></li>
+            <li class="active">{{ "Update Client" if client else "Add Client" }}</li>
+        </ol>
+
+        <div class="main-container">
+            <div class="scrollable-container">
+                <form action="{{ url_for('update_client', client_id=client.id) if client else url_for('create_client') }}" method="post">
+                    <!-- Form Actions -->
+                    <div class="form-actions">
+                        <div class="text-right">
+                            <button type="button" class="btn btn-default">Cancel</button>
+                            <button type="submit" class="btn btn-primary">{{"Update Client" if client else "Add Client"}}</button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <!-- Left Column -->
+                        <div class="col-md-6">
+                            <!-- Company Details Card -->
+                            {% include "components/cards/addClient.html" %}
+                            <!-- Address Card -->
+                            {% include "components/cards/address.html" %}
+                        </div>
+                        <!-- Right Column -->
+                        <div class="col-md-6">
+                            <!-- Contacts Card -->
+                            {% include "components/cards/contact.html" %}
+
+                            <!-- Additional Info Card -->
+                            <div class="card">
+                                <h3 class="card-title text-primary">Additional Info</h3>
+                                <div class="card-body">
+                                    <!-- ... additional info form content ... -->
+                                    <div class="form-group">
+                                        <label>Notes</label>
+                                        <textarea id="notes" name="notes" class="form-control"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block extra_js %}
+<script>
+    $('form').on('submit', function(e) {
+            e.preventDefault();
+            const form = $(this);
+            const formData = new FormData(form[0]);
+            // Convert FormData to JSON object
+            const jsonData = Object.fromEntries(formData);
+            // Submit form using fetch
+            fetch(form.attr('action'), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(jsonData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: data.message,
+                        showConfirmButton: false,
+                        timer: 1500
+                    }).then(() => {
+                        location.reload();
+                    });
+                    form[0].reset();
+                } else {
+                    throw new Error(data.message);
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: error.message || 'Something went wrong!'
+                });
+            });
+        });
+</script>
+    
+{% endblock %}
+

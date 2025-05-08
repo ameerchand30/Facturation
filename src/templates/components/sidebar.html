@@ -1,0 +1,116 @@
+
+{% block extra_css %}
+   <style>
+        .dropdown-profile-info {
+    padding: 10px 15px;
+    background: #f5f5f5;
+}
+
+.dropdown-profile-info .email-text {
+    color: #333;
+    font-size: 13px;
+    margin: 0;
+    word-break: break-all;
+}
+
+.text-muted {
+    color: #888;
+    font-size: 12px;
+}
+   </style>
+{% endblock %}
+
+<nav class="navbar-default navbar-static-side" role="navigation">
+    <div class="sidebar-collapse">
+        <ul class="nav metismenu" id="side-menu">
+            <li class="nav-header" style="background-color: rgb(20, 22, 22);">
+                <div class="dropdown profile-element"> 
+                    <span>
+                        {% if user.picture %}
+                            <img alt="profile" class="img-circle" src="{{ user.picture }}" />
+                        {% else %}
+                            <img alt="default" class="img-circle" src="{{ url_for('static', path='/img/1.png') }}" />
+                        {% endif %}
+                     </span>
+                    <a data-toggle="dropdown" class="dropdown-toggle" href="#">
+                    <span class="clear"> <span class="block m-t-xs">
+                        <strong class="font-bold">{{ user.name if user.name else 'Guest' }}</strong>
+                     </span> 
+                     <span class="text-muted text-xs block">
+                        {{ user.user_type|title if user.user_type else 'User' }} 
+                         <b class="caret"></b>
+                     </span>
+                     </span> </a>
+                    <ul class="dropdown-menu animated fadeInRight m-t-xs">
+                        <li class="dropdown-header"></li>
+                        <li>
+                            <div class="dropdown-profile-info">
+                                <p class="email-text">{{ user.email }}</p>
+                            </div>
+                        </li>
+                        <li class="divider"></li>
+                        <li><a href="{{ url_for('enterprise_profile')}}">Profile</a></li>
+                        <li><a href="https://mail.google.com/mail/u/0/#inbox">Mailbox</a></li>
+                        <li class="divider"></li>
+                        <li><a href="/logout">Logout</a></li>
+                    </ul>
+                </div>
+                <div class="logo-element">
+                    CH+
+                </div>
+            </li>
+            <li class="{% if current_page == 'dashboard' %}active{% endif %}">
+                <a href="{{ url_for('enterprise_dashboard') }}"><i class="fa fa-th-large"></i> <span class="nav-label">Dashboards</span> <span class="fa arrow"></span></a>
+                <ul class="nav nav-second-level">
+                    <li class="{% if current_page == 'dashboard' %}active{% endif %}"><a href="{{ url_for('enterprise_dashboard') }}">Dashboard</a></li>
+                </ul>
+            </li>
+            <li class="{% if current_page == 'view_clients' or current_page == 'add_client' %}active{% endif %}">
+                <a href="{{ url_for('read_clients') }}"><i class="fa fa-user"></i> <span class="nav-label">Client</span></a>
+                <ul class="nav nav-second-level">
+                    <li class="{% if current_page == 'view_clients' %}active{% endif %}"><a href="{{ url_for('read_clients') }}">View Clients</a></li>
+                    <li class="{% if current_page == 'add_client' %}active{% endif %}"><a href="{{ url_for('add_client_form') }}">Add Client</a></li>
+                </ul>
+            </li>
+            <li class="{% if current_page == 'view_products' or current_page == 'add_product' %}active{% endif %}">
+                <a href="{{ url_for('read_products') }}"><i class="fa fa-shower"></i> <span class="nav-label">Product</span></a>
+                <ul class="nav nav-second-level">
+                    <li class="{% if current_page == 'view_products' %}active{% endif %}"><a href="{{ url_for('read_products') }}">View Product</a></li>
+                    <li class="{% if current_page == 'add_product' %}active{% endif %}"><a href="{{ url_for('add_product_form') }}">Add Product</a></li>
+                </ul>
+            </li>
+            <li class="{% if current_page == 'view_enterprise' or current_page == 'add_enterprise' %}active{% endif %}">
+                <a href="{{ url_for('add_enterprise_form') }}"><i class="fa fa-home"></i> <span class="nav-label">Enterprise</span></a>
+                <ul class="nav nav-second-level">
+                    <li class="{% if current_page == 'view_enterprise' %}active{% endif %}"><a href="{{ url_for('read_enterprises') }}">View Enterprise</a></li>
+                    <li class="{% if current_page == 'add_enterprise' %}active{% endif %}"><a href="{{ url_for('add_enterprise_form') }}">Add Enterprise</a></li>
+                </ul>
+            <li class="{% if current_page == 'create_invoices' or current_page == 'read_invoices' %}active{% endif %}">
+                <a href="layouts.html"><i class="fa fa-home"></i> <span class="nav-label">Invoices</span></a>
+                <ul class="nav nav-second-level">
+                    <li class="{% if current_page == 'create_invoices' %}active{% endif %}"><a href="{{ url_for('create_invoice_form')}}">Create Invoice</a>
+                    <li class="{% if current_page == 'read_invoices' %} active {% endif %}"><a href="{{ url_for('read_invoices')}}">view Invoices</a>
+                </ul>
+            </li>
+
+            <li>
+                <a href="layouts.html"><i class="fa fa-diamond"></i> <span class="nav-label">Invoice</span></a>
+                <ul class="nav nav-second-level">
+                    <li class="active"><a href="order">Orders</a>
+                    <li class="active"><a href="orderPrint">Order Print</a>
+                </ul>
+            </li>
+            <li>
+                <a href="#"><i class="fa fa-bar-chart-o"></i> <span class="nav-label">Graphs</span><span class="fa arrow"></span></a>
+                <ul class="nav nav-second-level collapse">
+                    
+                    <li><a href="graph_chartjs.html">Charts</a></li>
+                    <li><a href="graph_chartjs.html">Encore pas pret</a></li>
+                    
+                </ul>
+            </li>
+
+        </ul>
+
+    </div>
+</nav>

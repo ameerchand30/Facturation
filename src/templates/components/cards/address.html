@@ -1,0 +1,42 @@
+<div class="card">
+    <ul class="nav nav-tabs">
+        <li class="active"><a href="#billing" data-toggle="tab">Add Personal Address</a></li>
+    </ul>
+    <div class="card-body">
+        <div class="tab-content">
+            <!-- ... address form content ... -->
+            <div id="billing" class="tab-pane active">
+                <div class="form-group">
+                    <label>Billing Street</label>
+                    <input type="text" id="Billing_Street" name="Billing_Street" class="form-control" value="{{ client.Billing_Street if client else '' }}">
+                </div>
+                <div class="form-group">
+                    <label>Address</label>
+                    <input type="text" class="form-control" value="{{ client.Billing_Street if client else '' }}">
+                </div>
+                <div class="form-group">
+                    <label>City</label>
+                    <input type="text" id="City" name="City" class="form-control" value="{{ client.City if client else '' }}">
+                </div>
+                <div class="form-group">
+                    <label>State/Province</label>
+                    <input type="text" class="form-control" value="{{ client.State_Province if client else '' }}">
+                </div>
+                <div class="form-group">
+                    <label>Postal Code</label>
+                    <input type="text" id="Postal_Code" name="Postal_Code" class="form-control" value="{{ client.Postal_Code if client else '' }}">
+                </div>
+                <div class="form-group">
+                    <label>Country</label>
+                    <select class="form-control" id="Country" name="Country">
+                        <option value="">Select...</option>
+                        {% for country in ["France", "Germany", "Italy", "Spain", "United States", "Canada"] %}
+                        <option value="{{ country }}" {% if client and client.Country == country %}selected{% endif %}>{{ country }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>

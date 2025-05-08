@@ -1,0 +1,156 @@
+
+{% extends "pages/User/userComponents/layout.html" %}
+{% block title %}Welcome to Facturaization{% endblock %}
+{% block extra_css %}
+<style>
+    .badge {
+        padding: 8px 12px;
+    }
+    .bg-paid { background-color: #28a745; }
+    .bg-pending { background-color: #ffc107; }
+    .bg-overdue { background-color: #dc3545; }
+    .btn-group .btn { margin: 0 2px; }
+</style>
+{% endblock %}
+
+{% block user_content %}
+<div class="container mt-4">
+    <!-- Search Section -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">My Invoices</h4>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <input type="text" id="invoiceSearch" class="form-control" placeholder="Search by Invoice Number">
+                </div>
+                <div class="col-md-4">
+                    <select id="enterpriseFilter" class="form-select">
+                        <option value="">All Enterprises</option>
+                        {% for enterprise in enterprises %}
+                            <option value="{{ enterprise.id }}">{{ enterprise.company_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <button id="searchBtn" class="btn btn-primary w-100">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Invoices Table -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Invoice #</th>
+                            <th>Enterprise</th>
+                            <th>Date</th>
+                            <th>Due Date</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for invoice in invoices %}
+                        <tr>
+                            <td>{{ invoice.id }}</td>
+                            <td>{{ invoice.enterprise_profile.company_name }}</td>
+                            <td>{{ invoice.creation_date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ invoice.due_date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ invoice.total_amount }}</td>
+                            <td>
+                                <span class="badge bg-{{ invoice.status_color }}">
+                                    {{ invoice.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-info view-invoice" data-id="{{ invoice.id }}">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-success download-invoice" data-id="{{ invoice.id }}">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        function searchInvoices() {
+            const invoiceNumber = $('#invoiceSearch').val();
+            const enterpriseId = $('#enterpriseFilter').val();
+    
+            $.ajax({
+                url: '/api/client/invoices/search',
+                method: 'GET',
+                data: { 
+                    invoice_number: invoiceNumber,
+                    enterprise_id: enterpriseId
+                },
+                success: function(data) {
+                    updateTable(data.invoices);
+                },
+                error: function(xhr) {
+                    toastr.error('Error searching invoices');
+                }
+            });
+        }
+    
+        $('#searchBtn').click(function(e) {
+            e.preventDefault();
+            searchInvoices();
+        });
+    
+        function updateTable(invoices) {
+            const tbody = $('tbody');
+            tbody.empty();
+            
+            invoices.forEach(invoice => {
+                tbody.append(`
+                    <tr>
+                        <td>${invoice.invoice_number}</td>
+                        <td>${invoice.enterprise.company_name}</td>
+                        <td>${new Date(invoice.issue_date).toLocaleDateString()}</td>
+                        <td>${new Date(invoice.due_date).toLocaleDateString()}</td>
+                        <td>${invoice.total_amount}</td>
+                        <td>
+                            <span class="badge bg-${invoice.status_color}">
+                                ${invoice.status}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-info view-invoice" data-id="${invoice.id}">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-success download-invoice" data-id="${invoice.id}">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `);
+            });
+        }
+    });
+    </script>
+    
+{% endblock %}
