@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  # PostgreSQL database service
+  db:
+    image: postgres:14-alpine  # Use a specific PostgreSQL version (14) and a lightweight Alpine image
+    volumes:
+      - db_data:/var/lib/postgresql/data  # Persist data to a named volume
+    environment:
+      POSTGRES_USER: ${DATABASE_USER:-Chand} # Use an environment variable for the username
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-admin} # Use an environment variable for the password
+      POSTGRES_DB: ${DATABASE_NAME:-Facturization} # Use an environment variable for the database name
+    ports:
+      - "5432:5432"  # Expose the PostgreSQL port
+    healthcheck: # Add a healthcheck
+      test: ["CMD-SHELL", "pg_isready -U myuser -d mydb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # pgAdmin service
+  pgadmin:
+    image: dpage/pgadmin4:latest # Use the latest pgAdmin version
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "8080:80" # Expose the pgAdmin port
+    depends_on:
+      - db # pgAdmin depends on the database
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin # Persist pgAdmin data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # FastAPI application service (basic example - replace with your actual app)
+  app:
+    build:
+      context: . # The directory containing your Dockerfile
+      dockerfile: Dockerfile # Name of your Dockerfile
+    volumes:
+      - ./app:/app  # Mount your application code for development (optional)
+    environment:
+      # Database connection details (use the service name 'db' as the hostname)
+      DATABASE_URL: "postgresql+asyncpg://${DATABASE_USER:-Chand}:${DATABASE_PASSWORD:-admin}@db/${DATABASE_NAME:-Facturization}"
+    ports:
+      - "8000:8000" # Expose the application port
+    depends_on:
+      - db # Application depends on the database
+    #command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"] #if you don't specify in Dockerfile
+    healthcheck: # Add a healthcheck
+      test: ["CMD", "curl", "-f", "http://localhost:8000"] #Check if your app is responsive
+      interval: 10s
+      timeout: 5s
+      retries: 5
+volumes:
+  db_data: # Named volume for PostgreSQL data
+  pgadmin_data: # Named volume for pgAdmin data

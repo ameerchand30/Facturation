@@ -1,13 +1,16 @@
 [tool.poetry]
 name = "facturation"
 version = "0.1.0"
-description = ""
+description = "FastAPI Facturation Project"
 authors = ["ameerchand30 <ameerchand30@gmail.com>"]
+packages = [{include = "src"}]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.9"
 fastapi = "^0.115.6"
+uvicorn = "^0.24.0"
+
 
 
 [build-system]
