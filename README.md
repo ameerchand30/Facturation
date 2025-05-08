@@ -5,6 +5,7 @@ FastAPI-based facturation system.
 ## Setup
 
 ```bash
+git reset --soft HEAD~
 docker build -t my_fastapi_app .
 
 # Remove existing containers and volumes
