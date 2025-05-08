@@ -44,7 +44,7 @@ RUN mkdir -p /app/src
 COPY ./src/ /app/src
 COPY ./src/templates ./templates
 COPY ./src/static ./static
-COPY .env ./.env
+# COPY .env ./.env
 
 
 

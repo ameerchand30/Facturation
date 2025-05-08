@@ -31,7 +31,7 @@ class Setting(BaseSettings):
     OPENAI_API_KEY: str
     OPENAI_API_MODEL: str
     class Config:
-        env_file = "../.env"
+        env_file = ".env"
         env_file_encoding = 'utf-8'
 
   

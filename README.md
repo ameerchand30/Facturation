@@ -8,7 +8,10 @@ FastAPI-based facturation system.
 git reset --soft HEAD~
 
 # to run on local machine change into configDict.py
-# env_file = "../.env"
+    env_file = "../.env"
+# to run on docker 
+ env_file = ".env"
+ 
 
 docker build -t my_fastapi_app .
 
