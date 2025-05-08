@@ -42,7 +42,7 @@ services:
       context: . # The directory containing your Dockerfile
       dockerfile: Dockerfile # Name of your Dockerfile
     volumes:
-      - ./app:/app  # Mount your application code for development (optional)
+      - app_data:/app/data # Mount a volume for application data (optional)
     environment:
       # Database connection details (use the service name 'db' as the hostname)
       DATABASE_URL: "postgresql+asyncpg://${DATABASE_USER:-Chand}:${DATABASE_PASSWORD:-admin}@db/${DATABASE_NAME:-Facturization}"
@@ -59,3 +59,4 @@ services:
 volumes:
   db_data: # Named volume for PostgreSQL data
   pgadmin_data: # Named volume for pgAdmin data
+  app_data: # Named volume for application data (optional)

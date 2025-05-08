@@ -38,7 +38,7 @@ RUN poetry config virtualenvs.create false && \
 RUN mkdir -p /app/src
 
 # Copy the rest of the application
-COPY ./src/ /app/src/
+COPY ./src/ /app/src
 
 # Install project
 RUN poetry install --no-ansi
