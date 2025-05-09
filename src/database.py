@@ -6,6 +6,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from urllib.parse import quote_plus
 from src.configDict import Setting
 from src.db_config import Base
+# models
+from src.api.models import *
 import logging
 
 
