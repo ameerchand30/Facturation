@@ -1,5 +1,9 @@
+import os
 from pydantic_settings import BaseSettings
 from authlib.integrations.starlette_client import OAuth
+
+from src.core.shared import BASE_DIR
+
 class Setting(BaseSettings):
     host_name: str
     host_port: str
@@ -31,8 +35,16 @@ class Setting(BaseSettings):
     OPENAI_API_KEY: str
     OPENAI_API_MODEL: str
     class Config:
-        env_file = ".env"
+        # Get the root directory dynamically
+    
+        print("Root Directory:", BASE_DIR)
+        env_file = os.path.join(BASE_DIR, ".env")
         env_file_encoding = 'utf-8'
+
+        @classmethod
+        def customise_sources(cls, init_settings, env_settings, file_secret_settings):
+            # Docker environment variables take precedence over .env file
+            return env_settings, init_settings, file_secret_settings
 
   
 settings = Setting()
