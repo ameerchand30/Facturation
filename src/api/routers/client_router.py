@@ -8,14 +8,12 @@ from src.api.schemas.client import Client,ClientCreate,ClientUpdate
 from src.api.dependencies.auth import get_current_user, require_user_type
 from src.api.models.public.user import UserType
 
-from fastapi.templating import Jinja2Templates
-
+from src.core.shared import templates
 
 # to add client with enterprise profile
 from src.api.dependencies.enterprise import get_enterprise_profile
 from src.api.models.public.user import EnterpriseProfile
 
-templates = Jinja2Templates(directory="templates")
 
 client_router = APIRouter(
     prefix="/clients",

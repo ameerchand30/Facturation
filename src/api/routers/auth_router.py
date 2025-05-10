@@ -4,13 +4,11 @@ from sqlalchemy.orm import Session
 from src.configDict import Setting, oauth
 from src.api.models.public.user import UserType, User
 from src.database import get_db
+from src.core.shared import templates
+
 from datetime import datetime, timedelta 
 import jwt
 
-
-from fastapi.templating import Jinja2Templates
-
-templates = Jinja2Templates(directory="templates")
 
 auth_router = APIRouter()
 settings = Setting()

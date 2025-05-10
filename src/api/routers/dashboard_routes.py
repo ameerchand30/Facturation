@@ -3,7 +3,7 @@ from sqlalchemy import func,cast, Date
 from typing import Optional, List, Dict, Any
 from datetime import datetime,timedelta
 from fastapi import APIRouter, Depends, Request, HTTPException
-from fastapi.templating import Jinja2Templates
+from src.core.shared import templates
 
 from src.api.dependencies.auth import get_current_user, require_user_type
 from src.api.models.public.user import UserType
@@ -15,7 +15,7 @@ from src.api.dependencies.auth import get_current_user, require_user_type
 from src.api.dependencies.enterprise import get_enterprise_profile
 from src.api.models.public.user import EnterpriseProfile
 
-templates = Jinja2Templates(directory="templates")
+
 
 dashboard_router = APIRouter()
 

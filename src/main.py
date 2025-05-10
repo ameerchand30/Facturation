@@ -14,20 +14,18 @@ from src.api.routers.report_generate import report_router
 from src.api.routers.dashboard_routes import dashboard_router
 from src.api.routers.enterprise_profile_router import enterprise_profile_router
 from src.api.routers.client_invoices_router import client_invoices_router
-# models
-from src.api.models import *
 
 
 from src.database import db_manager,engine
 from src.db_config import Base
+# Import shared templates
+from src.core.shared import templates, STATIC_DIR
 
 app = FastAPI()
 
-# Set up Jinja2 templates
-templates = Jinja2Templates(directory="templates")
 
-# Serve static files
-app.mount("/static", StaticFiles(directory="static"), name="static")
+# Serve static files with absolute path
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 print("FastAPI application is running...")
 

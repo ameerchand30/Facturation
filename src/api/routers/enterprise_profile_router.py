@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, File, UploadFile, Form, HTTPException
 from sqlalchemy.orm import Session
 from typing import Optional
-from fastapi.templating import Jinja2Templates
+from src.core.shared import templates
 from fastapi.responses import HTMLResponse
 from fastapi.requests import Request
 
@@ -17,7 +17,6 @@ enterprise_profile_router = APIRouter(
     tags=["Enterprise"],
     responses={404: {"description": "Not found"}},
 )
-templates = Jinja2Templates(directory="templates")
 
 @enterprise_profile_router.get("/profile", response_class=HTMLResponse, name="enterprise_profile")
 async def enterprise_profile(request: Request, db: Session = Depends(get_db), user: dict = Depends(require_user_type(UserType.ENTERPRISE))):

@@ -3,7 +3,7 @@ from fastapi.responses import RedirectResponse, HTMLResponse, StreamingResponse
 from sqlalchemy.orm import Session
 from typing import List,Optional
 from datetime import date
-from fastapi.templating import Jinja2Templates
+from src.core.shared import templates
 
 
 from src.database import get_db
@@ -23,8 +23,6 @@ from src.api.models.public.user import UserType
 from src.api.dependencies.enterprise import get_enterprise_profile
 from src.api.models.public.user import EnterpriseProfile
 
-
-templates = Jinja2Templates(directory="templates")
 
 report_router = APIRouter(
     prefix="/report",

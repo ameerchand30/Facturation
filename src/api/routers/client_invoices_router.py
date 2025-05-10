@@ -8,8 +8,7 @@ from src.api.models.public.user import EnterpriseProfile
 from src.api.models.invoice import Invoice
 from src.api.dependencies.auth import get_current_user
 
-from fastapi.templating import Jinja2Templates
-templates = Jinja2Templates(directory="templates")
+from src.core.shared import templates
 
 client_invoices_router = APIRouter(prefix="/client_", tags=["client"])
 

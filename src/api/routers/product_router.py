@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
-from fastapi.templating import Jinja2Templates
+from src.core.shared import templates
 from typing import List
 
 from src.database import get_db
@@ -13,7 +13,7 @@ from src.api.models.public.user import UserType
 from src.api.dependencies.enterprise import get_enterprise_profile
 from src.api.models.public.user import EnterpriseProfile
 
-templates = Jinja2Templates(directory="templates")
+
 
 product_router = APIRouter(
     prefix="/products",
