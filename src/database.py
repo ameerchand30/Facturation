@@ -6,8 +6,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from urllib.parse import quote_plus
 from src.configDict import Setting
 from src.db_config import Base
-# models
-from src.api.models import *
+
 import logging
 
 
@@ -112,9 +111,7 @@ class DatabaseManager:
                 autoflush=False,
                 bind=self.engine
             )
-     
-            # Create all tables
-            Base.metadata.create_all(bind=self.engine)
+    
             logging.info("Database initialized successfully")
             
         except Exception as e:

@@ -18,6 +18,9 @@ from src.api.routers.client_invoices_router import client_invoices_router
 
 from src.database import db_manager,engine
 from src.db_config import Base
+
+# models
+from src.api.models import *
 # Import shared templates
 from src.core.shared import templates, STATIC_DIR
 
@@ -31,7 +34,7 @@ print("FastAPI application is running...")
 
 
 # Create the database tables   
-# Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=engine)
 
 # Set up CORS middleware (if needed)
 app.add_middleware(

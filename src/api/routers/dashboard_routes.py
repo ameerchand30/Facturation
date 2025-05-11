@@ -3,12 +3,14 @@ from sqlalchemy import func,cast, Date
 from typing import Optional, List, Dict, Any
 from datetime import datetime,timedelta
 from fastapi import APIRouter, Depends, Request, HTTPException
+
 from src.core.shared import templates
+from src.database import get_db
 
 from src.api.dependencies.auth import get_current_user, require_user_type
 from src.api.models.public.user import UserType
-from src.database import get_db
 from src.api.models.invoice import Invoice
+
 from src.api.dependencies.auth import get_current_user, require_user_type
 
 # to show dashboard with each enterprise profile
@@ -74,6 +76,7 @@ async def enterprise_dashboard(
     ).all()
 
     # Prepare the response data
+    
     response_data = {
         "enterprise": enterprise_profile,
         "metrics": {
