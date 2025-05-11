@@ -22,7 +22,7 @@ from src.api.models.public.user import EnterpriseProfile
 dashboard_router = APIRouter()
 
 # Client dashboard
-@dashboard_router.get("/client/dashboard")
+@dashboard_router.get("/client/dashboard", name="client_dashboard")
 async def client_dashboard(request: Request, user: dict = Depends(require_user_type(UserType.CLIENT))):
     return templates.TemplateResponse(
         "pages/Client/dashboard.html",

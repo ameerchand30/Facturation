@@ -85,14 +85,19 @@ async def auth_callback(request: Request, provider: str, db: Session = Depends(g
             db.add(db_user)
             db.commit()
             db.refresh(db_user)
+         # Get user_type from session and convert back to enum
+        user_type_str = request.session.get('user_type')
+        if not user_type_str:
+            raise HTTPException(status_code=400, detail="User type not specified")
         
+        user_type = UserType(user_type_str)  # Convert string back to enum
         # Create JWT token
         token_data = {
             "sub": str(db_user.id),
             "name": db_user.name,
             "picture": db_user.picture,
             "email": db_user.email,
-            "user_type": str(db_user.user_type.value),  # Convert Enum to string
+            "user_type": user_type_str,  # Use the string value from session
             "exp": datetime.utcnow() + timedelta(hours=4),  # Add expiration
             "google_access_token": token.get('access_token')  # Add Google access token if needed
         }
