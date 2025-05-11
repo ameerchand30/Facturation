@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import func,cast, Date
+from sqlalchemy import func,cast, Date, and_
 from typing import Optional, List, Dict, Any
 from datetime import datetime,timedelta
 from fastapi import APIRouter, Depends, Request, HTTPException
@@ -9,7 +9,7 @@ from src.database import get_db
 
 from src.api.dependencies.auth import get_current_user, require_user_type
 from src.api.models.public.user import UserType
-from src.api.models.invoice import Invoice
+from src.api.models.invoice import Invoice, InvoiceItem
 
 from src.api.dependencies.auth import get_current_user, require_user_type
 
@@ -42,35 +42,49 @@ async def enterprise_dashboard(
     user: dict = Depends(require_user_type(UserType.ENTERPRISE)),
     enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile)
 ):
-    # Get date ranges based on period
+    # # Get date ranges based on period
+
     today = datetime.now()
     if period == "today":
         start_date = today.replace(hour=0, minute=0, second=0, microsecond=0)
-        end_date = start_date - timedelta(days=1)
+        end_date = start_date + timedelta(days=1)  # Changed from subtraction to addition
     elif period == "monthly":
         start_date = today.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        end_date = (start_date - timedelta(days=1)).replace(day=1)
+        end_date = today  # Use today as end date for current month
     else:  # annual
         start_date = today.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
-        end_date = datetime(today.year - 1, 1, 1)
+        end_date = today  # Use today as end date for current year
     print('start date',start_date)
     print('end date',end_date)  
     # Calculate metrics
     metrics = db.query(
         func.count(Invoice.id).label('total_orders'),
-        func.sum(Invoice.total_amount).label('total_income')
+        func.sum(
+            InvoiceItem.quantity * InvoiceItem.unit_price
+        ).label('total_income')
+    ).join(
+        InvoiceItem, Invoice.id == InvoiceItem.invoice_id
     ).filter(
-        Invoice.enterprise_profile_id == enterprise_profile.id,
-        Invoice.creation_date.between(start_date, end_date)
+        and_(
+            Invoice.enterprise_profile_id == enterprise_profile.id,
+            Invoice.creation_date.between(start_date, end_date)
+        )
     ).first()
+
     # Get chart data
     chart_data = db.query(
         func.date(Invoice.creation_date).label('date'),
         func.count(Invoice.id).label('orders'),
-        func.sum(Invoice.total_amount).label('income')
+        func.sum(
+            InvoiceItem.quantity * InvoiceItem.unit_price
+        ).label('income')
+    ).join(
+        InvoiceItem, Invoice.id == InvoiceItem.invoice_id
     ).filter(
-        Invoice.enterprise_profile_id == enterprise_profile.id,
-        Invoice.creation_date.between(start_date, end_date)
+        and_(
+            Invoice.enterprise_profile_id == enterprise_profile.id,
+            Invoice.creation_date.between(start_date, end_date)
+        )
     ).group_by(
         func.date(Invoice.creation_date)
     ).all()
