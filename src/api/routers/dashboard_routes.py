@@ -1,14 +1,14 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import func,cast, Date, and_
+from sqlalchemy import func,cast, Date, and_, distinct
 from typing import Optional, List, Dict, Any
 from datetime import datetime,timedelta
-from fastapi import APIRouter, Depends, Request, HTTPException
+from fastapi import APIRouter, Depends, Request, HTTPException,Query
 
 from src.core.shared import templates
 from src.database import get_db
 
 from src.api.dependencies.auth import get_current_user, require_user_type
-from src.api.models.public.user import UserType
+from src.api.models.public.user import UserType,ClientProfile,User
 from src.api.models.invoice import Invoice, InvoiceItem
 
 from src.api.dependencies.auth import get_current_user, require_user_type
@@ -19,19 +19,205 @@ from src.api.models.public.user import EnterpriseProfile
 
 
 
-dashboard_router = APIRouter()
+dashboard_router = APIRouter(tags=["Dashboard"])
 
 # Client dashboard
 @dashboard_router.get("/client/dashboard", name="client_dashboard")
 async def client_dashboard(request: Request, user: dict = Depends(require_user_type(UserType.CLIENT))):
     return templates.TemplateResponse(
-        "pages/Client/dashboard.html",
+        "pages/User/dashboard.html",
         {
             "request": request,
             "current_page": "dashboard",
             "user": user
         }
     )
+@dashboard_router.get("/client/dashboard/data", name="client_dashboard_data")
+async def client_dashboard_data(
+    request: Request,
+    db: Session = Depends(get_db),
+    user: dict = Depends(require_user_type(UserType.CLIENT)),
+    date_from: str = Query(None),
+    date_to: str = Query(None),
+    enterprise_id: Optional[int] = Query(None),
+    period: str = Query('month', enum=['day', 'week', 'month'])
+):
+    # Get client profile
+    client_profile = db.query(User).filter(User.id == user["sub"]).first()
+    if not client_profile:
+        raise HTTPException(status_code=404, detail="Client profile not found")
+
+    # Parse dates
+    end_date = datetime.strptime(date_to, "%Y-%m-%d") if date_to else datetime.now()
+    start_date = datetime.strptime(date_from, "%Y-%m-%d") if date_from else end_date - timedelta(days=30)
+
+    # Base query filters
+    base_filters = [
+        Invoice.client_id == client_profile.id,
+        Invoice.creation_date.between(start_date, end_date)
+    ]
+    if enterprise_id:
+        base_filters.append(Invoice.enterprise_profile_id == enterprise_id)
+
+    # Get associated enterprises
+    enterprises = (
+        db.query(EnterpriseProfile)
+        .join(Invoice, Invoice.enterprise_profile_id == EnterpriseProfile.id)
+        .filter(Invoice.client_id == client_profile.id)
+        .distinct()
+        .all()
+    )
+
+    # Calculate basic metrics
+    metrics = db.query(
+        func.count(distinct(Invoice.id)).label('total_transactions'),
+        func.sum(InvoiceItem.quantity * InvoiceItem.unit_price).label('total_expenditure'),
+        func.avg(InvoiceItem.quantity * InvoiceItem.unit_price).label('avg_transaction')
+    ).join(
+        InvoiceItem, Invoice.id == InvoiceItem.invoice_id
+    ).filter(
+        *base_filters
+    ).first()
+
+    # Calculate expenditure trends
+    if period == 'day':
+        group_by = func.date(Invoice.creation_date)
+        date_format = '%Y-%m-%d'
+    elif period == 'week':
+        group_by = func.date_trunc('week', Invoice.creation_date)
+        date_format = '%Y-W%W'
+    else:  # month
+        group_by = func.date_trunc('month', Invoice.creation_date)
+        date_format = '%Y-%m'
+
+    expenditure_trend = (
+        db.query(
+            group_by.label('date'),
+            func.sum(InvoiceItem.quantity * InvoiceItem.unit_price).label('amount')
+        )
+        .join(InvoiceItem, Invoice.id == InvoiceItem.invoice_id)
+        .filter(*base_filters)
+        .group_by('date')
+        .order_by('date')
+        .all()
+    )
+
+    # Calculate enterprise distribution
+    enterprise_distribution = (
+        db.query(
+            EnterpriseProfile.company_name,
+            func.sum(InvoiceItem.quantity * InvoiceItem.unit_price).label('amount')
+        )
+        .join(Invoice, Invoice.enterprise_profile_id == EnterpriseProfile.id)
+        .join(InvoiceItem, Invoice.id == InvoiceItem.invoice_id)
+        .filter(*base_filters)
+        .group_by(EnterpriseProfile.company_name)
+        .order_by(func.sum(InvoiceItem.quantity * InvoiceItem.unit_price).desc())
+        .all()
+    )
+
+    # Calculate transaction activity by day of week
+    transaction_activity = (
+        db.query(
+            func.extract('dow', Invoice.creation_date).label('day_of_week'),
+            func.count(distinct(Invoice.id)).label('count')
+        )
+        .filter(*base_filters)
+        .group_by('day_of_week')
+        .order_by('day_of_week')
+        .all()
+    )
+
+    # Calculate top expenses by category (assuming you have a category field)
+    top_expenses = (
+        db.query(
+            InvoiceItem.product_id,
+            func.sum(InvoiceItem.quantity * InvoiceItem.unit_price).label('amount')
+        )
+        .join(Invoice)
+        .filter(*base_filters)
+        .group_by(InvoiceItem.product_id)
+        .order_by(func.sum(InvoiceItem.quantity * InvoiceItem.unit_price).desc())
+        .limit(5)
+        .all()
+    )
+
+    # Calculate growth percentages
+    previous_start = start_date - (end_date - start_date)
+    previous_metrics = db.query(
+        func.count(distinct(Invoice.id)).label('prev_transactions'),
+        func.sum(InvoiceItem.quantity * InvoiceItem.unit_price).label('prev_expenditure')
+    ).join(
+        InvoiceItem
+    ).filter(
+        Invoice.client_id == client_profile.id,
+        Invoice.creation_date.between(previous_start, start_date)
+    ).first()
+
+    # Prepare chart data
+    chart_data = {
+        'expenditure_trend': {
+            'labels': [str(row.date.strftime(date_format)) for row in expenditure_trend],
+            'datasets': [{
+                'label': 'Expenditure',
+                'data': [float(row.amount) for row in expenditure_trend],
+                'borderColor': '#3498db',
+                'backgroundColor': 'rgba(52, 152, 219, 0.1)'
+            }]
+        },
+        'enterprise_distribution': {
+            'labels': [row.company_name for row in enterprise_distribution],
+            'datasets': [{
+                'data': [float(row.amount) for row in enterprise_distribution],
+                'backgroundColor': ['#3498db', '#2ecc71', '#f39c12', '#e74c3c', '#95a5a6']
+            }]
+        },
+        'transaction_activity': {
+            'labels': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            'datasets': [{
+                'label': 'Transactions',
+                'data': [next((row.count for row in transaction_activity if row.day_of_week == i), 0) 
+                        for i in range(7)],
+                'backgroundColor': 'rgba(52, 152, 219, 0.7)'
+            }]
+        },
+        'top_expenses': {
+            'labels': [row.product_id for row in top_expenses],
+            'datasets': [{
+                'data': [float(row.amount) for row in top_expenses],
+                'backgroundColor': [
+                    'rgba(52, 152, 219, 0.7)',
+                    'rgba(46, 204, 113, 0.7)',
+                    'rgba(243, 156, 18, 0.7)',
+                    'rgba(231, 76, 60, 0.7)',
+                    'rgba(149, 165, 166, 0.7)'
+                ]
+            }]
+        }
+    }
+
+    return {
+        "enterprises": enterprises,
+        "metrics": {
+            "total_transactions": metrics.total_transactions or 0,
+            "total_expenditure": float(metrics.total_expenditure or 0),
+            "avg_transaction": float(metrics.avg_transaction or 0),
+            "transaction_growth": calculate_growth(
+                previous_metrics.prev_transactions, 
+                metrics.total_transactions
+            ),
+            "expenditure_growth": calculate_growth(
+                previous_metrics.prev_expenditure, 
+                metrics.total_expenditure
+            )
+        },
+        "chart_data": chart_data
+    }
+
+def calculate_growth(previous, current):
+    if not previous or not current:
+        return 0
+    return ((current - previous) / previous) * 100
 
 # Enterprise dashboard
 @dashboard_router.get("/enterprise/dashboard", name="enterprise_dashboard")

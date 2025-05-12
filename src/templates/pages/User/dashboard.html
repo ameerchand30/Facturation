@@ -1,0 +1,844 @@
+{% extends "pages/User/userComponents/layout.html" %}
+
+{% block title %}Dashboard - Facturaization{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+  --primary-color: #3498db;
+  --primary-dark: #2980b9;
+  --success-color: #2ecc71;
+  --warning-color: #f39c12;
+  --danger-color: #e74c3c;
+  --text-color: #34495e;
+  --text-light: #7f8c8d;
+  --bg-light: #f5f7fa;
+  --card-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  --hover-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  --border-radius: 12px;
+  --transition: all 0.3s ease;
+}
+
+body {
+  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  color: var(--text-color);
+  background-color: var(--bg-light);
+}
+
+.dashboard-wrapper {
+  padding: 20px;
+  background-color: var(--bg-light);
+}
+
+/* Dashboard Header */
+.dashboard-header {
+  margin-bottom: 25px;
+  padding: 25px;
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--card-shadow);
+  position: relative;
+  overflow: hidden;
+}
+
+.dashboard-header::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 60%;
+  height: 200%;
+  background: rgba(255, 255, 255, 0.1);
+  transform: rotate(-30deg);
+}
+
+.dashboard-header .welcome-text {
+  font-weight: 300;
+  margin-bottom: 5px;
+  font-size: 15px;
+  opacity: 0.9;
+}
+
+.dashboard-header .header-title {
+  font-weight: 600;
+  margin-bottom: 15px;
+  font-size: 24px;
+}
+
+.date-display {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.date-value {
+  font-weight: 500;
+  font-size: 16px;
+}
+
+/* Filter Section */
+.filter-panel {
+  margin: -15px 20px 25px;
+  padding: 20px;
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--card-shadow);
+  position: relative;
+  z-index: 10;
+}
+
+.filter-title {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: var(--text-light);
+}
+
+.filter-input {
+  border: 1px solid #e0e6ed;
+  border-radius: 8px;
+  padding: 8px 12px;
+  width: 100%;
+  transition: var(--transition);
+}
+
+.filter-input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+  outline: none;
+}
+
+.filter-icon {
+  color: var(--text-light);
+}
+
+.filter-btn {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 15px;
+  font-weight: 500;
+  transition: var(--transition);
+  font-size: 14px;
+}
+
+.filter-btn:hover {
+  box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+  transform: translateY(-1px);
+}
+
+/* Stat Cards */
+.stat-card-container {
+  margin-bottom: 25px;
+}
+
+.stat-card {
+  background: white;
+  border-radius: var(--border-radius);
+  padding: 20px;
+  height: 100%;
+  box-shadow: var(--card-shadow);
+  position: relative;
+  overflow: hidden;
+  transition: var(--transition);
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--hover-shadow);
+}
+
+.stat-card-primary {
+  border-left: 4px solid var(--primary-color);
+}
+
+.stat-card-success {
+  border-left: 4px solid var(--success-color);
+}
+
+.stat-card-warning {
+  border-left: 4px solid var(--warning-color);
+}
+
+.stat-card-danger {
+  border-left: 4px solid var(--danger-color);
+}
+
+.stat-card .stat-title {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-light);
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+.stat-card .stat-value {
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: var(--text-color);
+}
+
+.stat-card .stat-value.primary {
+  color: var(--primary-color);
+}
+
+.stat-card .stat-value.success {
+  color: var(--success-color);
+}
+
+.stat-card .stat-value.warning {
+  color: var(--warning-color);
+}
+
+.stat-card .stat-value.danger {
+  color: var(--danger-color);
+}
+
+.stat-card .stat-icon {
+  position: absolute;
+  right: 20px;
+  top: 20px;
+  opacity: 0.2;
+  font-size: 32px;
+  transition: var(--transition);
+}
+
+.stat-card:hover .stat-icon {
+  transform: scale(1.1);
+  opacity: 0.25;
+}
+
+.stat-indicator {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.stat-indicator.positive {
+  background-color: rgba(46, 204, 113, 0.1);
+  color: var(--success-color);
+}
+
+.stat-indicator.negative {
+  background-color: rgba(231, 76, 60, 0.1);
+  color: var(--danger-color);
+}
+
+.stat-indicator i {
+  margin-right: 4px;
+  font-size: 10px;
+}
+
+/* Chart Sections */
+.chart-container {
+  background: white;
+  border-radius: var(--border-radius);
+  padding: 20px;
+  box-shadow: var(--card-shadow);
+  margin-bottom: 25px;
+  height: 100%;
+}
+
+.chart-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: var(--text-color);
+}
+
+.time-filter {
+  display: inline-flex;
+  background: rgba(0, 0, 0, 0.03);
+  padding: 2px;
+  border-radius: 8px;
+}
+
+.time-filter-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  background: transparent;
+  border: none;
+  color: var(--text-light);
+  transition: var(--transition);
+}
+
+.time-filter-btn.active {
+  background: var(--primary-color);
+  color: white;
+}
+
+.time-filter-btn:hover:not(.active) {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+/* Loading Animation */
+.loading-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: var(--transition);
+  z-index: 10;
+  border-radius: var(--border-radius);
+}
+
+.updating .loading-overlay {
+  opacity: 1;
+  visibility: visible;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.highlight {
+  animation: pulse 0.6s ease-in-out;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 992px) {
+  .dashboard-header {
+    text-align: center;
+  }
+  
+  .date-display {
+    margin-top: 15px;
+    text-align: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .filter-panel {
+    margin: -15px 0 25px;
+  }
+  
+  .chart-container {
+    margin-bottom: 20px;
+  }
+}
+</style>
+<!-- Required CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
+{% endblock %}
+
+{% block user_content %}
+<div class="dashboard-wrapper">
+  <!-- Dashboard Header -->
+  <div class="dashboard-header">
+    <div class="row">
+      <div class="col-md-8">
+        <p class="welcome-text">Welcome back!</p>
+        <h1 class="header-title">Financial Overview</h1>
+        <p>Here's a summary of your financial activity</p>
+      </div>
+      <div class="col-md-4 text-right">
+        <div class="date-display">Current Date</div>
+        <div class="date-value" id="currentDate"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter Panel -->
+  <div class="filter-panel">
+    <form id="filterForm" class="row">
+      <div class="col-md-5">
+        <div class="form-group">
+          <label class="filter-title">Date Range</label>
+          <div class="input-group">
+            <span class="input-group-addon filter-icon">
+              <i class="fa fa-calendar"></i>
+            </span>
+            <input type="text" class="filter-input" id="daterange" name="daterange" placeholder="Select date range">
+          </div>
+        </div>
+      </div>
+      <div class="col-md-5">
+        <div class="form-group">
+          <label class="filter-title">Enterprise</label>
+          <select class="filter-input" id="enterpriseSelect">
+            <option value="">All Enterprises</option>
+            {% for enterprise in enterprises %}
+              <option value="{{ enterprise.id }}">{{ enterprise.company_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="col-md-2">
+        <div class="form-group">
+          <label class="filter-title">&nbsp;</label>
+          <button type="submit" class="filter-btn btn-block">
+            <i class="fa fa-filter"></i> Apply Filters
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div class="row stat-card-container">
+    <div class="col-md-3 col-sm-6">
+      <div class="stat-card stat-card-primary">
+        <div class="loading-overlay">
+          <div class="spinner-border" role="status"></div>
+        </div>
+        <div class="stat-title">Total Transactions</div>
+        <div class="stat-value primary" id="totalTransactions">{{ total_transactions }}</div>
+        <div class="stat-indicator positive">
+          <i class="fa fa-arrow-up"></i> 8.3%
+        </div>
+        <div class="stat-icon">
+          <i class="fa fa-shopping-cart"></i>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-3 col-sm-6">
+      <div class="stat-card stat-card-success">
+        <div class="loading-overlay">
+          <div class="spinner-border" role="status"></div>
+        </div>
+        <div class="stat-title">Total Revenue</div>
+        <div class="stat-value success" id="totalRevenue">€{{ total_revenue|default('0') }}</div>
+        <div class="stat-indicator positive">
+          <i class="fa fa-arrow-up"></i> 12.7%
+        </div>
+        <div class="stat-icon">
+          <i class="fa fa-line-chart"></i>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-3 col-sm-6">
+      <div class="stat-card stat-card-warning">
+        <div class="loading-overlay">
+          <div class="spinner-border" role="status"></div>
+        </div>
+        <div class="stat-title">Average Transaction</div>
+        <div class="stat-value warning" id="avgTransaction">€{{ avg_transaction|default('0') }}</div>
+        <div class="stat-indicator positive">
+          <i class="fa fa-arrow-up"></i> 3.4%
+        </div>
+        <div class="stat-icon">
+          <i class="fa fa-exchange"></i>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-3 col-sm-6">
+      <div class="stat-card stat-card-danger">
+        <div class="loading-overlay">
+          <div class="spinner-border" role="status"></div>
+        </div>
+        <div class="stat-title">Total Expenditure</div>
+        <div class="stat-value danger" id="totalExpenditure">€{{ total_expenditure }}</div>
+        <div class="stat-indicator negative">
+          <i class="fa fa-arrow-down"></i> 4.2%
+        </div>
+        <div class="stat-icon">
+          <i class="fa fa-euro"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="row">
+    <div class="col-lg-8">
+      <div class="chart-container">
+        <div class="row">
+          <div class="col-md-8">
+            <h3 class="chart-title">Expenditure Trends</h3>
+          </div>
+          <div class="col-md-4 text-right">
+            <div class="time-filter">
+              <button class="time-filter-btn active" data-period="day">Day</button>
+              <button class="time-filter-btn" data-period="week">Week</button>
+              <button class="time-filter-btn" data-period="month">Month</button>
+            </div>
+          </div>
+        </div>
+        <div class="chart-body">
+          <canvas id="expenditureChart" height="300"></canvas>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-4">
+      <div class="chart-container">
+        <h3 class="chart-title">Enterprise Distribution</h3>
+        <div class="chart-body">
+          <canvas id="enterpriseDistributionChart" height="300"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Transaction Activity -->
+  <div class="row">
+    <div class="col-lg-8">
+      <div class="chart-container">
+        <h3 class="chart-title">Transaction Activity</h3>
+        <div class="chart-body">
+          <canvas id="transactionActivityChart" height="250"></canvas>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-4">
+      <div class="chart-container">
+        <h3 class="chart-title">Top Expenses</h3>
+        <div class="chart-body">
+          <canvas id="topExpensesChart" height="250"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Include Chart.js and daterangepicker -->
+
+<!-- Required JS in correct order -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+$(document).ready(function() {
+  // Set current date
+  const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', options);
+
+  // Initialize date range picker
+  $('#daterange').daterangepicker({
+    opens: 'left',
+    autoUpdateInput: false,
+    ranges: {
+      'Today': [moment(), moment()],
+      'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+      'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+      'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+      'This Month': [moment().startOf('month'), moment().endOf('month')],
+      'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+    },
+    locale: {
+      format: 'YYYY-MM-DD'
+    }
+  });
+
+  // Handle date range selection
+  $('#daterange').on('apply.daterangepicker', function(ev, picker) {
+    $(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
+    $('.stat-card').addClass('updating');
+    setTimeout(() => $('.stat-card').removeClass('updating'), 800);
+    
+    // Update data
+    updateDashboardData(picker.startDate, picker.endDate);
+  });
+
+  // Handle filter form submission
+  $('#filterForm').on('submit', function(e) {
+    e.preventDefault();
+    
+    // Add a visual indication that we're updating
+    $('.stat-card').addClass('updating');
+    setTimeout(() => $('.stat-card').removeClass('updating'), 800);
+    
+    const dateRange = $('#daterange').val().split(' - ');
+    const enterpriseId = $('#enterpriseSelect').val();
+    
+    if (dateRange.length === 2) {
+      updateDashboardData(moment(dateRange[0]), moment(dateRange[1]), enterpriseId);
+    } else {
+      // If no date range is selected, use the last 30 days as default
+      updateDashboardData(moment().subtract(29, 'days'), moment(), enterpriseId);
+    }
+  });
+
+  // Handle time filter clicks for charts
+  $('.time-filter-btn').on('click', function() {
+    $('.time-filter-btn').removeClass('active');
+    $(this).addClass('active');
+    
+    const period = $(this).data('period');
+    updateChartPeriod(period);
+  });
+
+  // Initialize charts
+  initializeCharts();
+  
+  function initializeCharts() {
+    // Sample data - you'll replace this with your actual data
+    initExpenditureChart();
+    initEnterpriseDistributionChart();
+    initTransactionActivityChart();
+    initTopExpensesChart();
+  }
+  
+  function initExpenditureChart() {
+    const ctx = document.getElementById('expenditureChart').getContext('2d');
+    const expenditureChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        datasets: [{
+          label: 'Expenditure',
+          data: [4500, 5200, 4800, 5800, 6000, 5600, 7000, 6800, 6200, 6500, 7200, 7500],
+          borderColor: '#3498db',
+          backgroundColor: 'rgba(52, 152, 219, 0.1)',
+          tension: 0.3,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: {
+              color: 'rgba(0, 0, 0, 0.05)'
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            }
+          }
+        }
+      }
+    });
+  }
+  
+  function initEnterpriseDistributionChart() {
+    const ctx = document.getElementById('enterpriseDistributionChart').getContext('2d');
+    const distributionChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Company A', 'Company B', 'Company C', 'Company D', 'Others'],
+        datasets: [{
+          data: [35, 25, 20, 15, 5],
+          backgroundColor: [
+            '#3498db',
+            '#2ecc71',
+            '#f39c12',
+            '#e74c3c',
+            '#95a5a6'
+          ],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              boxWidth: 12,
+              padding: 15
+            }
+          }
+        }
+      }
+    });
+  }
+  
+  function initTransactionActivityChart() {
+    const ctx = document.getElementById('transactionActivityChart').getContext('2d');
+    const activityChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        datasets: [{
+          label: 'Transactions',
+          data: [65, 59, 80, 81, 56, 55, 40],
+          backgroundColor: 'rgba(52, 152, 219, 0.7)',
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: {
+              color: 'rgba(0, 0, 0, 0.05)'
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            }
+          }
+        }
+      }
+    });
+  }
+  
+  function initTopExpensesChart() {
+    const ctx = document.getElementById('topExpensesChart').getContext('2d');
+    const expensesChart = new Chart(ctx, {
+      type: 'polarArea',
+      data: {
+        labels: ['Rent', 'Salaries', 'Equipment', 'Marketing', 'Utilities'],
+        datasets: [{
+          data: [30, 40, 15, 10, 5],
+          backgroundColor: [
+            'rgba(52, 152, 219, 0.7)',
+            'rgba(46, 204, 113, 0.7)',
+            'rgba(243, 156, 18, 0.7)',
+            'rgba(231, 76, 60, 0.7)',
+            'rgba(149, 165, 166, 0.7)'
+          ]
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              boxWidth: 12,
+              padding: 15
+            }
+          }
+        }
+      }
+    });
+  }
+
+  function updateDashboardData(startDate, endDate, enterpriseId = '') {
+    // Update loading state
+    $('.stat-card').addClass('updating');
+    
+   // Create query parameters
+    const params = new URLSearchParams({
+        date_from: startDate.format('YYYY-MM-DD'),
+        date_to: endDate.format('YYYY-MM-DD'),
+        period: $('.time-filter-btn.active').data('period') || 'month'
+    });
+
+      // Only add enterprise_id if it has a value
+    if (enterpriseId) {
+        params.append('enterprise_id', enterpriseId);
+    }
+    // Make the fetch request
+    fetch(`/client/dashboard/data?${params.toString()}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(response => {
+        // Update statistics
+        $('#totalTransactions').text(response.total_transactions);
+        $('#totalExpenditure').text('€' + response.total_expenditure);
+        
+        // Add animation to show changes
+        $('.stat-card').removeClass('updating').addClass('highlight');
+        setTimeout(() => $('.stat-card').removeClass('highlight'), 600);
+
+        // Update metrics and charts
+        updateMetrics(response.metrics);
+        updateCharts(response);
+    })
+    .catch(error => {
+        console.error('Error updating dashboard:', error);
+        $('.stat-card').removeClass('updating');
+        
+        // Show error notification using toastr
+        toastr.error('Failed to update dashboard data. Please try again.');
+    });
+  }
+  
+  function updateMetrics(metrics) {
+    if (!metrics) return;
+
+    // Update transaction metrics
+    $('#totalTransactions').text(metrics.total_transactions || 0);
+    $('#totalExpenditure').text('€' + (metrics.total_expenditure || 0).toLocaleString());
+    $('#totalRevenue').text('€' + (metrics.total_revenue || 0).toLocaleString());
+    $('#avgTransaction').text('€' + (metrics.avg_transaction || 0).toLocaleString());
+
+    // Update trend indicators
+    updateTrendIndicator('totalTransactions', metrics.transaction_growth);
+    updateTrendIndicator('totalRevenue', metrics.revenue_growth);
+    updateTrendIndicator('avgTransaction', metrics.avg_transaction_growth);
+    updateTrendIndicator('totalExpenditure', metrics.expenditure_growth);
+}
+function updateTrendIndicator(elementId, growth) {
+    if (typeof growth === 'undefined') return;
+
+    const element = $(`#${elementId}`).siblings('.stat-indicator');
+    const isPositive = growth >= 0;
+    const icon = isPositive ? 'fa-arrow-up' : 'fa-arrow-down';
+    const className = isPositive ? 'positive' : 'negative';
+    
+    element
+        .removeClass('positive negative')
+        .addClass(className)
+        .html(`<i class="fa ${icon}"></i> ${Math.abs(growth).toFixed(1)}%`);
+}
+  function updateCharts(data) {
+    // This function will update all charts with new data from the API
+    // Implementation depends on your actual data structure
+    console.log('Updating charts with new data:', data);
+    
+    // You would update each chart with the new data here
+    // Example (modify according to your actual data structure):
+    // expenditureChart.data.datasets[0].data = data.expenditure_trend;
+    // expenditureChart.update();
+  }
+  
+  function updateChartPeriod(period) {
+    // This function will update the chart data based on selected time period
+    // Implementation depends on your requirements
+    console.log('Updating chart period to:', period);
+    
+    // Example implementation:
+    // const periods = {
+    //   'day': dailyData,
+    //   'week': weeklyData,
+    //   'month': monthlyData
+    // };
+    // expenditureChart.data.datasets[0].data = periods[period];
+    // expenditureChart.update();
+  }
+});
+</script>
+{% endblock %}
