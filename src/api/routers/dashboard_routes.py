@@ -10,6 +10,7 @@ from src.database import get_db
 from src.api.dependencies.auth import get_current_user, require_user_type
 from src.api.models.public.user import UserType,ClientProfile,User
 from src.api.models.invoice import Invoice, InvoiceItem
+from src.api.models.product import ProductModel
 
 from src.api.dependencies.auth import get_current_user, require_user_type
 
@@ -142,6 +143,24 @@ async def client_dashboard_data(
         .all()
     )
 
+        # Get top products by usage
+    top_products = (
+        db.query(
+            ProductModel.name.label('product_name'),  # Changed from Product to ProductModel
+            func.count(InvoiceItem.id).label('count')
+        )
+        .join(InvoiceItem, InvoiceItem.product_id == ProductModel.id)  # Changed from Product to ProductModel
+        .join(Invoice, Invoice.id == InvoiceItem.invoice_id)
+        .filter(
+            Invoice.client_id == client_profile.id,
+            Invoice.creation_date.between(start_date, end_date)
+        )
+        .group_by(ProductModel.name)  # Changed from Product to ProductModel
+        .order_by(func.count(InvoiceItem.id).desc())
+        .limit(8)
+        .all()
+    )
+
     # Calculate growth percentages
     previous_start = start_date - (end_date - start_date)
     previous_metrics = db.query(
@@ -169,7 +188,16 @@ async def client_dashboard_data(
             'labels': [row.company_name for row in enterprise_distribution],
             'datasets': [{
                 'data': [float(row.amount) for row in enterprise_distribution],
-                'backgroundColor': ['#3498db', '#2ecc71', '#f39c12', '#e74c3c', '#95a5a6']
+                'backgroundColor': [
+                    'rgba(52, 152, 219, 0.7)',
+                    'rgba(46, 204, 113, 0.7)',
+                    'rgba(243, 156, 18, 0.7)',
+                    'rgba(231, 76, 60, 0.7)',
+                    'rgba(149, 165, 166, 0.7)',
+                    'rgba(155, 89, 182, 0.7)',
+                    'rgba(52, 73, 94, 0.7)',
+                    'rgba(26, 188, 156, 0.7)'
+                ]
             }]
         },
         'transaction_activity': {
@@ -198,6 +226,13 @@ async def client_dashboard_data(
 
     return {
         "enterprises": enterprises,
+        "top_products": [
+            {
+                "product_name": product.product_name,
+                "count": product.count
+            }
+            for product in top_products
+        ],
         "metrics": {
             "total_transactions": metrics.total_transactions or 0,
             "total_expenditure": float(metrics.total_expenditure or 0),

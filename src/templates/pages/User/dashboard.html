@@ -630,40 +630,59 @@ $(document).ready(function() {
     });
   }
   
-  function initEnterpriseDistributionChart() {
+function initEnterpriseDistributionChart() {
     const ctx = document.getElementById('enterpriseDistributionChart').getContext('2d');
-    const distributionChart = new Chart(ctx, {
-      type: 'doughnut',
-      data: {
-        labels: ['Company A', 'Company B', 'Company C', 'Company D', 'Others'],
-        datasets: [{
-          data: [35, 25, 20, 15, 5],
-          backgroundColor: [
-            '#3498db',
-            '#2ecc71',
-            '#f39c12',
-            '#e74c3c',
-            '#95a5a6'
-          ],
-          borderWidth: 0
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            position: 'bottom',
-            labels: {
-              boxWidth: 12,
-              padding: 15
+    window.enterpriseDistributionChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: [], // Will be populated from backend
+            datasets: [{
+                data: [], // Will be populated from backend
+                backgroundColor: [
+                    'rgba(52, 152, 219, 0.7)',  // Blue
+                    'rgba(46, 204, 113, 0.7)',   // Green
+                    'rgba(243, 156, 18, 0.7)',   // Orange
+                    'rgba(231, 76, 60, 0.7)',    // Red
+                    'rgba(149, 165, 166, 0.7)',  // Gray
+                    'rgba(155, 89, 182, 0.7)',   // Purple
+                    'rgba(52, 73, 94, 0.7)',     // Dark Blue
+                    'rgba(26, 188, 156, 0.7)'    // Turquoise
+                ],
+                borderWidth: 0,
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '65%',
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        boxWidth: 12,
+                        padding: 15,
+                        font: {
+                            size: 11
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const value = context.raw;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((value / total) * 100).toFixed(1);
+                            return `${context.label}: €${value.toLocaleString()} (${percentage}%)`;
+                        }
+                    }
+                }
             }
-          }
         }
-      }
     });
-  }
-  
+
+    return window.enterpriseDistributionChart;
+}
   function initTransactionActivityChart() {
     const ctx = document.getElementById('transactionActivityChart').getContext('2d');
     const activityChart = new Chart(ctx, {
@@ -702,39 +721,68 @@ $(document).ready(function() {
     });
   }
   
-  function initTopExpensesChart() {
+function initTopExpensesChart() {
     const ctx = document.getElementById('topExpensesChart').getContext('2d');
-    const expensesChart = new Chart(ctx, {
-      type: 'polarArea',
-      data: {
-        labels: ['Rent', 'Salaries', 'Equipment', 'Marketing', 'Utilities'],
-        datasets: [{
-          data: [30, 40, 15, 10, 5],
-          backgroundColor: [
-            'rgba(52, 152, 219, 0.7)',
-            'rgba(46, 204, 113, 0.7)',
-            'rgba(243, 156, 18, 0.7)',
-            'rgba(231, 76, 60, 0.7)',
-            'rgba(149, 165, 166, 0.7)'
-          ]
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            position: 'bottom',
-            labels: {
-              boxWidth: 12,
-              padding: 15
+    window.topExpensesChart = new Chart(ctx, {
+        type: 'polarArea',
+        data: {
+            labels: [], // Will be populated with product names
+            datasets: [{
+                data: [], // Will be populated with usage counts
+                backgroundColor: [
+                    'rgba(52, 152, 219, 0.7)',  // Blue
+                    'rgba(46, 204, 113, 0.7)',   // Green
+                    'rgba(243, 156, 18, 0.7)',   // Orange
+                    'rgba(231, 76, 60, 0.7)',    // Red
+                    'rgba(149, 165, 166, 0.7)',  // Gray
+                    'rgba(155, 89, 182, 0.7)',   // Purple
+                    'rgba(52, 73, 94, 0.7)',     // Dark Blue
+                    'rgba(26, 188, 156, 0.7)'    // Turquoise
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        boxWidth: 12,
+                        padding: 15
+                    }
+                },
+                title: {
+                    display: true,
+                    text: 'Most Used Products',
+                    font: {
+                        size: 16,
+                        weight: 'bold'
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const value = context.raw;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((value / total) * 100).toFixed(1);
+                            return `${context.label}: ${value} (${percentage}%)`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                r: {
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
             }
-          }
         }
-      }
     });
-  }
 
+    return window.topExpensesChart;
+}
   function updateDashboardData(startDate, endDate, enterpriseId = '') {
     // Update loading state
     $('.stat-card').addClass('updating');
@@ -786,6 +834,24 @@ $(document).ready(function() {
     });
   }
   
+  // Update function to handle new data
+function updateTopExpensesChart(data) {
+    if (!data || !data.top_products || !window.topExpensesChart) return;
+
+    const chart = window.topExpensesChart;
+    const sortedProducts = data.top_products.sort((a, b) => b.count - a.count).slice(0, 8);
+
+    chart.data.labels = sortedProducts.map(p => p.product_name);
+    chart.data.datasets[0].data = sortedProducts.map(p => p.count);
+    
+    // Add animation
+    chart.options.animation = {
+        duration: 1000,
+        easing: 'easeInOutQuart'
+    };
+
+    chart.update();
+}
   function updateMetrics(metrics) {
     if (!metrics) return;
 
@@ -815,14 +881,20 @@ function updateTrendIndicator(elementId, growth) {
         .html(`<i class="fa ${icon}"></i> ${Math.abs(growth).toFixed(1)}%`);
 }
   function updateCharts(data) {
-    // This function will update all charts with new data from the API
-    // Implementation depends on your actual data structure
-    console.log('Updating charts with new data:', data);
+       if (!data) return;
+
+            // Update enterprise distribution chart
+      if (data.chart_data && data.chart_data.enterprise_distribution && window.enterpriseDistributionChart) {
+          const distributionData = data.chart_data.enterprise_distribution;
+          window.enterpriseDistributionChart.data.labels = distributionData.labels;
+          window.enterpriseDistributionChart.data.datasets[0].data = distributionData.datasets[0].data;
+          window.enterpriseDistributionChart.update();
+      }
+
+    // Update top expenses chart with product usage data
+      updateTopExpensesChart(data);
     
-    // You would update each chart with the new data here
-    // Example (modify according to your actual data structure):
-    // expenditureChart.data.datasets[0].data = data.expenditure_trend;
-    // expenditureChart.update();
+    // ... update other charts ...
   }
   
   function updateChartPeriod(period) {
