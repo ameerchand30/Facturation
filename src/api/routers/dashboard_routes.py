@@ -11,6 +11,7 @@ from src.api.dependencies.auth import get_current_user, require_user_type
 from src.api.models.public.user import UserType,ClientProfile,User
 from src.api.models.invoice import Invoice, InvoiceItem
 from src.api.models.product import ProductModel
+from src.api.models.client import Clients
 
 from src.api.dependencies.auth import get_current_user, require_user_type
 
@@ -44,9 +45,14 @@ async def client_dashboard_data(
     period: str = Query('month', enum=['day', 'week', 'month'])
 ):
     # Get client profile
-    client_profile = db.query(User).filter(User.id == user["sub"]).first()
+    user = db.query(User).filter(User.id == user["sub"]).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Client profile not found")
+
+    client_profile = db.query(Clients).filter(Clients.email == user.email).first()
     if not client_profile:
         raise HTTPException(status_code=404, detail="Client profile not found")
+    
 
     # Parse dates
     end_date = datetime.strptime(date_to, "%Y-%m-%d") if date_to else datetime.now()
