@@ -1,4 +1,46 @@
 
+
+
+<style>
+.navbar-nav > li > .dropdown-menu {
+    margin-top: 0;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border: none;
+    padding: 8px 0;
+}
+
+.dropdown-menu > li > a {
+    padding: 8px 20px;
+    color: #4B5563;
+    transition: all 0.2s ease;
+}
+
+.dropdown-menu > li > a:hover {
+    background-color: #F3F4F6;
+    color: #1F2937;
+}
+
+.dropdown-menu > li > a i {
+    margin-right: 8px;
+    width: 16px;
+}
+
+.navbar-nav > li > a.dropdown-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.navbar-nav > li > a.dropdown-toggle i {
+    font-size: 1.2em;
+}
+
+.divider {
+    margin: 8px 0;
+    background-color: #E5E7EB;
+}
+</style>
     <!-- Navigation -->
     <nav class="navbar navbar-default navbar-fixed-top">
         <div class="container">
@@ -13,11 +55,34 @@
             </div>
             <div id="navbar" class="navbar-collapse collapse">
                 <ul class="nav navbar-nav navbar-right">
-                    <li><a href="#features">Features</a></li>
-                    <li><a href="#testimonials">Testimonials</a></li>
-                    <li><a href="#pricing">Pricing</a></li>
-                    <li><a href="#contact">Contact</a></li>
-                    <li><a href="login" class="btn btn-primary btn-sm" style="margin-top: 10px;">Get Started</a></li>
+                    {% if not user %}
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#testimonials">Testimonials</a></li>
+                        <li><a href="#pricing">Pricing</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                        <li><a href="/login" class="btn btn-primary btn-sm" style="margin-top: 10px;">Get Started</a></li>
+                    {% else %}
+                        {% if user.user_type == 'CLIENT' %}
+                            <li><a href="/client/dashboard">Dashboard</a></li>
+                            <li><a href="/client/invoices">Invoices</a></li>
+                            <li><a href="/client/profile">Profile</a></li>
+                        {% elif user.user_type == 'ENTERPRISE' %}
+                            <li><a href="/enterprise/dashboard">Dashboard</a></li>
+                            <li><a href="/enterprise/invoices">Manage Invoices</a></li>
+                            <li><a href="/enterprise/clients">Clients</a></li>
+                            <li><a href="/enterprise/profile">Profile</a></li>
+                        {% endif %}
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-user-circle"></i> {{ user.email }} <span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a href="/profile"><i class="fas fa-cog"></i> Settings</a></li>
+                                <li role="separator" class="divider"></li>
+                                <li><a href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                            </ul>
+                        </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>

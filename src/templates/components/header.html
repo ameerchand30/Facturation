@@ -110,6 +110,7 @@
             </li>
 
 
+
             <li>
                 <a href="/logout" id="logout-link">
                     <i class="fa fa-sign-out"></i> Log out
@@ -124,3 +125,24 @@
 
     </nav>
     </div>
+    <script>
+function handleLogout(event) {
+    event.preventDefault();
+    
+  document.getElementById('logout-link').addEventListener('click', async (e) => {
+    e.preventDefault();
+    
+    try {
+        // Clear client-side storage
+        localStorage.clear();
+        sessionStorage.clear();
+        
+        // Redirect to logout endpoint
+        window.location.href = '/logout';
+    } catch (error) {
+        console.error('Logout failed:', error);
+        alert('Logout failed. Please try again.');
+    }
+});
+}
+</script>

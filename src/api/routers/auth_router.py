@@ -1,10 +1,12 @@
-from fastapi import APIRouter, Depends, Request, HTTPException
+from fastapi import APIRouter, Depends, Request, HTTPException, Response
 from fastapi.responses import RedirectResponse
+from typing import Optional
 from sqlalchemy.orm import Session
 from src.configDict import Setting, oauth
 from src.api.models.public.user import UserType, User
 from src.database import get_db
 from src.core.shared import templates
+from src.api.dependencies.auth import get_current_user
 
 from datetime import datetime, timedelta 
 import jwt
@@ -20,12 +22,63 @@ async def login(request: Request):
 async def register(request: Request):
     return templates.TemplateResponse("pages/User/login/register.html", {"request": request})
 @auth_router.get("/logout")
-async def logout(request: Request):
-    # Clear session data and redirect to login page
-    request.session.clear()
-    response = RedirectResponse(url="/login")
-    response.delete_cookie("access_token")
-    return response
+async def logout(
+    request: Request,
+    response: Response,
+    current_user: Optional[dict] = Depends(get_current_user)
+):
+    try:
+        # Clear session data
+        request.session.clear()
+
+        # Create response
+        response = RedirectResponse(
+            url="/login",
+            status_code=302
+        )
+
+        # Clear all authentication cookies
+        response.delete_cookie(
+            key="access_token",
+            path="/",
+            domain=None,
+            secure=True,
+            httponly=True,
+            samesite="lax"
+        )
+        
+        # Clear refresh token if you have one
+        response.delete_cookie(
+            key="refresh_token",
+            path="/",
+            domain=None,
+            secure=True,
+            httponly=True,
+            samesite="lax"
+        )
+
+        # Clear any other session cookies
+        response.delete_cookie(
+            key="session",
+            path="/",
+            domain=None,
+            secure=True,
+            httponly=True,
+            samesite="lax"
+        )
+
+        # Log the logout event if you want to track it
+        if current_user:
+            print(f"User logged out: {current_user.get('email', 'Unknown')}")
+
+        return response
+
+    except Exception as e:
+        print(f"Logout error: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail="An error occurred during logout"
+        )
 
 @auth_router.get("/login/{provider}/{user_type}")
             #get /login/google/enterprise
