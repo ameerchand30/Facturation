@@ -27,8 +27,7 @@ RUN apt-get update && \
     shared-mime-info \
     fonts-liberation \
     && rm -rf /var/lib/apt/lists/*
-    libgobject-2.0-0 \
-    libpango-1.0-0
+
 # Install Poetry
 RUN curl -sSL https://install.python-poetry.org | python3 -
 ENV PATH="${POETRY_HOME}/bin:$PATH"
