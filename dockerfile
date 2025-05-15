@@ -15,7 +15,7 @@ RUN apt-get update && \
     curl \
     gcc \
     python3-dev \
-    # WeasyPrint dependencies
+    # Core WeasyPrint dependencies
     libpango1.0-0 \
     libharfbuzz0b \
     libpangoft2-1.0-0 \
@@ -26,13 +26,16 @@ RUN apt-get update && \
     libffi-dev \
     shared-mime-info \
     fonts-liberation \
-    # Additional font dependencies
+    # Extended font and graphics dependencies
     fontconfig \
     xfonts-utils \
     xorg-server-headless \
-    # Even more font-related packages to try
     libfreetype6-dev \
     libxft-dev \
+    libjpeg-dev \
+    libpng-dev \
+    libtiff-dev \
+    zlib1g-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Poetry
