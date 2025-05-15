@@ -26,10 +26,13 @@ RUN apt-get update && \
     libffi-dev \
     shared-mime-info \
     fonts-liberation \
-    # Additional font dependencies that might be missing
+    # Additional font dependencies
     fontconfig \
     xfonts-utils \
     xorg-server-headless \
+    # Even more font-related packages to try
+    libfreetype6-dev \
+    libxft-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Poetry
