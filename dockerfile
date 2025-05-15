@@ -36,6 +36,8 @@ RUN apt-get update && \
     libpng-dev \
     libtiff-dev \
     zlib1g-dev \
+    # Explicitly install glib development files
+    libglib2.0-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Poetry
