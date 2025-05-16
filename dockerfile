@@ -29,7 +29,7 @@ RUN apt-get update && \
     # Extended font and graphics dependencies
     fontconfig \
     xfonts-utils \
-    xorg-server-headless \
+    # xorg-server-headless \ # Not needed for headless
     libfreetype6-dev \
     libxft-dev \
     libjpeg-dev \
