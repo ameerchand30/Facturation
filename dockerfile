@@ -29,8 +29,10 @@ RUN apt-get update && \
     # Extended font and graphics dependencies
     fontconfig \
     xfonts-utils \
-    # xorg-server-headless \ # Not needed for headless
+    # Not needed for headless
+    xorg-server-headless \ 
     libxrender1 \ 
+    # Additional dependencies for WeasyPrint
     libfreetype6-dev \
     libxft-dev \
     libjpeg-dev \
