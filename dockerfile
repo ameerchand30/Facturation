@@ -30,6 +30,7 @@ RUN apt-get update && \
     fontconfig \
     xfonts-utils \
     # xorg-server-headless \ # Not needed for headless
+    # libxrender1 \ # Not needed for headless
     libfreetype6-dev \
     libxft-dev \
     libjpeg-dev \
@@ -37,7 +38,7 @@ RUN apt-get update && \
     libtiff-dev \
     zlib1g-dev \
     # Explicitly install glib development files
-    libglib2.0-dev \
+    # libglib2.0-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Poetry
