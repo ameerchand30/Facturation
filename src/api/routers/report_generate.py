@@ -5,7 +5,6 @@ from typing import List,Optional
 from datetime import date
 from src.core.shared import templates, STATIC_DIR
 
-
 from src.database import get_db
 from src.api.models.client import Clients
 from src.api.models.enterprise import Enterprise
