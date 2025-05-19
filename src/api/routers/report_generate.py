@@ -3,7 +3,7 @@ from fastapi.responses import RedirectResponse, HTMLResponse, StreamingResponse
 from sqlalchemy.orm import Session
 from typing import List,Optional
 from datetime import date
-from src.core.shared import templates
+from src.core.shared import templates, STATIC_DIR
 
 
 from src.database import get_db
@@ -62,8 +62,16 @@ async def generate_pdf(
                 "enterprise_profile": enterprise_profile,  # Pass the enterprise profile to the template
             }
         ).body.decode()
-        # Get CSS file path
-        css_file = Path("static/css/pdf.css")
+        # Get CSS file path using STATIC_DIR
+        css_file = Path(STATIC_DIR) / "css" / "pdf.css"
+        
+        # Verify CSS file exists
+        if not css_file.exists():
+            raise HTTPException(
+                status_code=500, 
+                detail="CSS file not found in report generation router"
+            )
+
         # Generate PDF
         html = HTML(string=html_content, base_url=str(request.base_url))
         css = CSS(filename=css_file)
