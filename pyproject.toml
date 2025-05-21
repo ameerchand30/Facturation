@@ -7,30 +7,50 @@ packages = [{include = "src"}]
 readme = "README.md"
 
 [tool.poetry.dependencies]
+# Core Framework
 python = "^3.9"
 fastapi = "^0.115.6"
 uvicorn = "^0.24.0"
+
+# Template Engine
 jinja2 = "^3.1.5"
+
+# Database
 sqlalchemy = "^2.0.36"
-pydantic-settings = "^2.7.0"
+psycopg2-binary = "^2.9.10"
 alembic = "^1.14.0"
-python-multipart = "^0.0.20"
-weasyprint = "^63.1"
-beautifulsoup4 = "^4.12.3"
+
+# Settings and Configuration
+pydantic-settings = "^2.7.0"
+python-dotenv = "^1.0.0"
+
+# Authentication and Security
 python-jose = {extras = ["cryptography"], version = "^3.4.0"}
-authlib = "^1.5.2"
+# to login with social media or for openai
+authlib = "^1.5.2" 
 itsdangerous = "^2.2.0"
 fastapi-jwt-auth = "^0.5.0"
+
+# File Handling and Parsing
+python-multipart = "^0.0.20"
+
+# for PDF
+weasyprint = "^63.1"
+beautifulsoup4 = "^4.12.3"
+
+# HTTP Client
 httpx = "^0.28.1"
+
+# Scheduling
 apscheduler = "^3.11.0"
+
+# Google Integration
 google-auth-oauthlib = "^1.2.1"
 google-api-python-client = "^2.166.0"
+
+# AI and Visualization
 openai = "^1.72.0"
 plotly = "^6.0.1"
-python-dotenv = "^1.0.0"
-psycopg2-binary = "^2.9.10"
-
-
 
 
 [build-system]
