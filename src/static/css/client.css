@@ -162,7 +162,32 @@ input:checked + .slider:before {
 ::-webkit-scrollbar-thumb:hover {
     background: #a8a8a8;
 }
-
+/* Add these styles for dropdown positioning */
 .table-responsive {
-    overflow: visible !important;
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+}
+
+.table td {
+    position: relative;
+}
+
+.btn-group.actions-btn {
+    position: static;
+}
+
+.btn-group.actions-btn .dropdown-menu {
+    position: absolute;
+    left: auto;
+    right: 0;
+    z-index: 1000;
+    min-width: 160px;
+}
+
+@media (max-width: 768px) {
+    .btn-group.actions-btn .dropdown-menu {
+        left: auto;
+        right: 0;
+        transform: none;
+    }
 }
