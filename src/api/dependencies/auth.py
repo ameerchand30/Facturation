@@ -1,5 +1,6 @@
 from fastapi import Depends, HTTPException, Request
 from fastapi.security import HTTPBearer
+from fastapi.responses import RedirectResponse, JSONResponse
 from typing import Optional
 from jwt import PyJWTError, ExpiredSignatureError, decode
 
@@ -12,25 +13,31 @@ settings = Setting()
 security = HTTPBearer()
 
 async def get_current_user(request: Request) -> dict:
+    # Check if request accepts JSON
+    is_api_request = "application/json" in request.headers.get("accept", "")
+    
     token = request.cookies.get("access_token")
-    # Clean the token to remove any unwanted characters
     token = clean_token(token)
 
     if not token:
-        # Try to get token from header
         auth_header = request.headers.get("access_token")
         if auth_header:
             token = auth_header
         else:
-            """ raise HTTPException(
-                status_code=401,
-                detail="Not authenticated - No token found in cookies or headers"
-            ) """
-            print("Not authenticated - No token found in cookies or headers")
-            return RedirectResponse(url="/", status_code=302)
+            if is_api_request:
+                # Return JSON response for API requests
+                return JSONResponse(
+                    status_code=401,
+                    content={"detail": "Not authenticated - No token found"}
+                )
+            else:
+                # Redirect for browser requests
+                return RedirectResponse(
+                    url="/login?error=unauthorized",
+                    status_code=302
+                )
+
     try:
-        # Decode the JWT token
-        # Remove 'Bearer ' prefix if present
         token_value = clean_token(token)
         payload = decode(
             token_value, 
@@ -38,34 +45,45 @@ async def get_current_user(request: Request) -> dict:
             algorithms=[settings.algorithm]
         )
         return payload
-    except ExpiredSignatureError as e:
-        raise HTTPException(
-            status_code=401, 
-            detail=f"Token has expired{str(e)}"
+
+    except ExpiredSignatureError:
+        if is_api_request:
+            return JSONResponse(
+                status_code=401,
+                content={"detail": "Token has expired"}
+            )
+        return RedirectResponse(
+            url="/login?error=token_expired",
+            status_code=302
         )
-        print("Token has expired", str(e))
-        # Redirect to login page if token has expired
-        return RedirectResponse(url="/", status_code=302)
-    except PyJWTError as e:
-        raise HTTPException(
-            status_code=401, 
-            detail=f"PyJWTError: Could not validate credentials: {str(e)}"
+
+    except (PyJWTError, Exception) as e:
+        if is_api_request:
+            return JSONResponse(
+                status_code=401,
+                content={"detail": f"Authentication failed: {str(e)}"}
+            )
+        return RedirectResponse(
+            url="/login?error=authentication_failed",
+            status_code=302
         )
-    except Exception as e:
-        """ raise HTTPException(
-            status_code=401, 
-            detail=f"Could not validate credentials: {str(e)}"
-        ) """
-        print("Could not validate credentials", str(e))
-        # Redirect to login page if token is invalid
-        return RedirectResponse(url="/", status_code=302)
 
 def require_user_type(allowed_type: UserType):
-    async def user_type_dependency(user: dict = Depends(get_current_user)):
-        if user["user_type"] != allowed_type:
-            raise HTTPException(
-                status_code=403,
-                detail=f"Access restricted to {allowed_type} users only"
+    async def user_type_dependency(request: Request, user: dict = Depends(get_current_user)):
+        # Check if response is RedirectResponse or JSONResponse
+        if isinstance(user, (RedirectResponse, JSONResponse)):
+            return user
+            
+        # Check user type
+        if user.get("user_type") != allowed_type:
+            if "application/json" in request.headers.get("accept", ""):
+                return JSONResponse(
+                    status_code=403,
+                    content={"detail": f"Access restricted to {allowed_type} users only"}
+                )
+            return RedirectResponse(
+                url="/login?error=unauthorized_role",
+                status_code=302
             )
         return user
     return user_type_dependency
