@@ -38,29 +38,29 @@ WORKDIR /app
 COPY . .
 
 # Copy only dependency files first
-COPY pyproject.toml poetry.lock* README.md ./
+#COPY pyproject.toml poetry.lock* README.md ./
 
 
 # Debug: List files
 RUN ls -la
 
-# Install dependencies
+# Install external dependencies
 RUN poetry config virtualenvs.create false && \
     poetry install --no-root --no-ansi
 
 # Create the /app/src directory
-RUN mkdir -p /app/src
+#RUN mkdir -p /app/src
 
 # Copy the rest of the application
-COPY ./src/ /app/src
+#COPY ./src/ /app/src
 # COPY ./src/templates ./templates
 # COPY ./src/static ./static
 # COPY .env ./.env
 
 
 
-# Install project
-RUN poetry install --no-ansi
+# Install project dependencies from pyproject.toml
+#RUN poetry install --no-ansi
 
 # Run the application
 CMD ["poetry", "run", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
