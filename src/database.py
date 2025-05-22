@@ -10,7 +10,13 @@ from src.db_config import Base
 import logging
 
 
-logging.basicConfig(level=logging.INFO)
+# Set logging level to ERROR to minimize output
+logging.basicConfig(level=logging.ERROR)
+
+# Disable SQLAlchemy logging
+logging.getLogger('sqlalchemy.engine').setLevel(logging.ERROR)
+logging.getLogger('sqlalchemy.pool').setLevel(logging.ERROR)
+logging.getLogger('sqlalchemy.dialects').setLevel(logging.ERROR)
 
 class DatabaseManager:
     def __init__(self):
@@ -100,7 +106,7 @@ class DatabaseManager:
             # Create SQLAlchemy engine with proper encoding
             self.engine = create_engine(
                 self.sqlalchemy_database_url,
-                echo=True,
+                echo=False,
                 pool_pre_ping=True,
                 connect_args={'client_encoding': 'utf8'}
             )

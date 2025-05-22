@@ -23,6 +23,7 @@ class Setting(BaseSettings):
     secret_key: str
     jwt_secret_key: str
     session_secret: str
+    CSRF_SECRET_KEY: str = "your-secure-secret-key" 
     # OAuth2 settings
     google_client_id: str
     google_client_secret: str

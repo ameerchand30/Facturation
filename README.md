@@ -8,7 +8,7 @@ FastAPI-based facturation system.
 git reset --soft HEAD~
 
 # to run on local machine change into configDict.py
-    env_file = "../.env"
+    poetry run uvicorn src.main:app --reload
 # to run on docker 
  env_file = ".env"
  
