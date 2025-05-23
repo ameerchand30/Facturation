@@ -102,7 +102,14 @@ async def addProduct(
         )
 # to edit a existing product form
 @product_router.get("/edit/{product_id}", name="edit_product")
-async def edit_product(product_id: int, request: Request, db: Session = Depends(get_db), user: dict = Depends(require_user_type(UserType.ENTERPRISE))):
+async def edit_product(product_id: int, request: Request, db: Session = Depends(get_db), user: dict = Depends(require_user_type(UserType.ENTERPRISE)),enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile)):
+   
+       # Check if user is unauthorized
+    if isinstance(user, (RedirectResponse, JSONResponse)):
+        return RedirectResponse(
+            url="/login?error=unauthorized",
+            status_code=302
+        )
     product = db.query(ProductModel).filter(ProductModel.id == product_id).first()
     if product is None:
         raise HTTPException(status_code=404, detail="Product not found")
