@@ -9,39 +9,24 @@
 
 {% block content %}
 <div class="container-fluid">
-    <!-- Breadcrumb -->
-    <ol class="breadcrumb">
-        <li><a href="#"><i class="fa fa-home"></i></a></li>
-        <li class="active">Product</li>
-    </ol>
-
-    <!-- Filter Section -->
+    <input type="hidden" name="csrf_token" value="{{ csrf_token if csrf_token else '' }}">
+    <!-- Search Section -->
     <div class="filter-section">
         <div class="filter-controls">
-            <div class="actions-group">
-                <div class="btn-group actions-btn">
-                    <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
-                        Actions <span class="caret"></span>
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li><a href="#"><i class="fa fa-envelope"></i> Send Email</a></li>
-                        <li><a href="#"><i class="fa fa-trash"></i> Delete</a></li>
-                        <li><a href="#"><i class="fa fa-ban"></i> Deactivate</a></li>
-                    </ul>
-                </div>
-                <div class="status-filter">
-                    Active <button type="button" class="close">&times;</button>
-                </div>
-            </div>
-
             <div class="search-group">
                 <div class="input-group filter-group">
-                    <input type="text" class="form-control" placeholder="Filter">
+                    <input type="text" 
+                           id="searchInput" 
+                           class="form-control" 
+                           placeholder="Search products..."
+                           value="{{ search.replace('%', '') if search else '' }}"
+                           oninput="debounceSearch(this.value)">
+                    <span class="input-group-btn">
+                        <i class="fa fa-search"></i>
+                    </span>
                 </div>
             </div>
-
             <div class="action-buttons">
-                <button class="btn btn-success"><i class="fa fa-upload"></i> Import</button>
                 <a href="addProduct" class="btn btn-primary">
                     <i class="fa fa-plus"></i> Add Product
                 </a>
@@ -87,32 +72,47 @@
         </div>
     </div>
 
-    <!-- Pagination Section -->
+    <!-- Updated Pagination Section -->
     <div class="pagination-section">
         <div class="pagination-controls">
             <div class="rows-per-page">
-                <select class="form-control">
-                    <option>10</option>
-                    <option>25</option>
-                    <option>50</option>
-                    <option>100</option>
+                <select class="form-control" id="perPageSelect" onchange="changePerPage()">
+                    <option value="10" {% if per_page == 10 %}selected{% endif %}>10</option>
+                    <option value="25" {% if per_page == 25 %}selected{% endif %}>25</option>
+                    <option value="50" {% if per_page == 50 %}selected{% endif %}>50</option>
+                    <option value="100" {% if per_page == 100 %}selected{% endif %}>100</option>
                 </select>
                 <span class="text-muted">rows</span>
             </div>
             <div class="page-info">
-                <span class="text-muted">Page 1 of 1. Total results: 1</span>
+                <span class="text-muted">
+                    Page {{ page_number }} of {{ total_pages }}. 
+                    Total results: {{ total_items }}
+                </span>
             </div>
             <div class="page-navigation">
-                <button class="btn btn-default" title="First Page" disabled>
+                <button class="btn btn-default" 
+                        title="First Page" 
+                        onclick="goToPage(1)"
+                        {% if page_number == 1 %}disabled{% endif %}>
                     <i class="fa fa-angle-double-left"></i>
                 </button>
-                <button class="btn btn-default" title="Previous Page" disabled>
+                <button class="btn btn-default" 
+                        title="Previous Page" 
+                        onclick="goToPage('{{ page_number - 1 }}')"
+                        {% if page_number == 1 %}disabled{% endif %}>
                     <i class="fa fa-angle-left"></i>
                 </button>
-                <button class="btn btn-default" title="Next Page" disabled>
+                <button class="btn btn-default" 
+                        title="Next Page" 
+                        onclick="goToPage('{{ page_number + 1 }}')"
+                        {% if page_number == total_pages %}disabled{% endif %}>
                     <i class="fa fa-angle-right"></i>
                 </button>
-                <button class="btn btn-default" title="Last Page" disabled>
+                <button class="btn btn-default" 
+                        title="Last Page" 
+                        onclick="goToPage('{{ total_pages }}')"
+                        {% if page_number == total_pages %}disabled{% endif %}>
                     <i class="fa fa-angle-double-right"></i>
                 </button>
             </div>
@@ -120,9 +120,110 @@
     </div>
 </div>
 {% endblock %}
+
 {% block extra_js %}
 <script>
+    // Pagination function
+    function goToPage(page) {
+        const searchParams = new URLSearchParams(window.location.search);
+        searchParams.set('page', page);
+        const currentSearch = searchParams.get('search');
+        if (currentSearch) {
+            searchParams.set('search', currentSearch);
+        }
+        window.location.href = `${window.location.pathname}?${searchParams.toString()}`;
+    }
+
+    // Rows per page function
+    function changePerPage() {
+        const perPage = document.getElementById('perPageSelect').value;
+        const searchParams = new URLSearchParams(window.location.search);
+        const currentSearch = searchParams.get('search');
+        
+        // Clear existing parameters
+        searchParams.delete('page');
+        searchParams.delete('per_page');
+        searchParams.delete('search');
+        
+        // Set new parameters
+        searchParams.set('per_page', perPage);
+        searchParams.set('page', '1');
+        if (currentSearch) {
+            searchParams.set('search', currentSearch);
+        }
+        
+        window.location.href = `${window.location.pathname}?${searchParams.toString()}`;
+    }
+
+    // Add debounce function
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    // Modify search function to use AJAX
+    function handleSearch(searchTerm) {
+        const searchParams = new URLSearchParams(window.location.search);
+        if (searchTerm) {
+            searchParams.set('search', searchTerm);
+        } else {
+            searchParams.delete('search');
+        }
+        searchParams.set('page', 1);
+
+        // Use fetch instead of window.location
+        fetch(`${window.location.pathname}?${searchParams.toString()}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.text())
+        .then(html => {
+            // Update only the table content
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            
+            // Update table body
+            const tableBody = doc.querySelector('.table-responsive tbody');
+            document.querySelector('.table-responsive tbody').innerHTML = tableBody.innerHTML;
+            
+            // Update pagination
+            const pagination = doc.querySelector('.pagination-section');
+            document.querySelector('.pagination-section').innerHTML = pagination.innerHTML;
+            
+            // Update URL without page reload
+            window.history.pushState({}, '', `${window.location.pathname}?${searchParams.toString()}`);
+        })
+        .catch(error => {
+            console.error('Search error:', error);
+        });
+    }
+
+    // Create debounced search function with shorter delay
+    const debounceSearch = debounce((searchTerm) => {
+        handleSearch(searchTerm.trim());
+    }, 300); // Reduced to 300ms for better responsiveness
+
+    // Delete product function with CSRF protection
     function deleteProduct(productId) {
+        const csrfTokenElement = document.querySelector('input[name="csrf_token"]');
+        if (!csrfTokenElement) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'CSRF token not found. Please refresh the page.'
+            });
+            return;
+        }
+
         Swal.fire({
             title: 'Are you sure?',
             text: "You won't be able to revert this!",
@@ -134,7 +235,11 @@
         }).then((result) => {
             if (result.isConfirmed) {
                 fetch(`/products/delete/${productId}`, {
-                    method: 'DELETE'
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'same-origin'
                 })
                 .then(response => response.json())
                 .then(data => {

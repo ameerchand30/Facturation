@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse,JSONResponse
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 from src.core.shared import templates
 from typing import List
 
@@ -25,7 +26,10 @@ async def read_products(
     request: Request,
     db: Session = Depends(get_db),
     user: dict = Depends(require_user_type(UserType.ENTERPRISE)),
-    enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile)
+    enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile),
+    page: int = 1,
+    per_page: int = 10,
+    search: str = None
 ):
     # Check if user is unauthorized
     if isinstance(user, (RedirectResponse, JSONResponse)):
@@ -35,10 +39,38 @@ async def read_products(
         )
 
     try:
-        # Get products for the enterprise
-        products = db.query(ProductModel).filter(
+         # Ensure valid pagination parameters
+        page = max(1, page)  # Ensure page is at least 1
+        per_page = min(max(10, per_page), 100)  # Limit between 10 and 100
+    # Base query
+        query = db.query(ProductModel).filter(
             ProductModel.enterprise_profile_id == enterprise_profile.id
-        ).order_by(ProductModel.id.desc()).all()
+        )
+        
+        # Apply search if provided
+        if search:
+            search = f"%{search}%"
+            query = query.filter(
+                or_(
+                    ProductModel.name.ilike(search),
+                    ProductModel.ref_number.ilike(search),
+                    ProductModel.description.ilike(search)
+                )
+            )
+        
+        # Get total count for pagination
+        total_items = query.count()
+        total_pages = max(1, (total_items + per_page - 1) // per_page)
+
+        # Adjust page if it exceeds total pages
+        page = min(page, total_pages)
+         # Apply pagination with exact offset
+        offset = (page - 1) * per_page
+        # Apply pagination
+        products = query.order_by(ProductModel.id.desc())\
+            .offset(offset)\
+            .limit(per_page)\
+            .all()
 
         return templates.TemplateResponse(
             "pages/product.html",
@@ -46,9 +78,13 @@ async def read_products(
                 "request": request,
                 "products": products,
                 "current_page": "view_products",
+                "page_number": page,
+                "total_pages": total_pages,
+                "per_page": per_page,
+                "total_items": total_items,
+                "search": search,
                 "user": user,
-                "enterprise_id": enterprise_profile.id,
-                "csrf_token": request.state.csrf_token if hasattr(request.state, 'csrf_token') else None
+                "enterprise_id": enterprise_profile.id
             }
         )
     except Exception as e:
@@ -57,7 +93,7 @@ async def read_products(
             "pages/error.html",
             {
                 "request": request,
-                "error_message": "Error loading products",
+                "error_message": "Error loading products = " + str(e),
                 "current_page": "error",
                 "user": user
             },

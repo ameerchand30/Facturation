@@ -30,10 +30,9 @@
 
 /* Table Responsive */
 .table-container {
-    overflow-x: auto;
-    margin: 0 -15px;
-    padding: 0 15px;
-    overflow: visible !important;
+    margin-bottom: 60px; /* Add space for pagination */
+    max-height: calc(100vh - 250px); /* Adjust based on your header/footer height */
+    overflow-y: auto;
 }
 
 .table {
@@ -42,10 +41,12 @@
 
 /* Pagination Section */
 .pagination-section {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    margin-top: 20px;
+    position: sticky;
+    bottom: 0;
+    background: white;
+    padding: 10px 0;
+    border-top: 1px solid #ddd;
+    z-index: 100;
 }
 
 .pagination-controls {
@@ -72,6 +73,7 @@
 
 .table-responsive {
     overflow: visible !important;
+    margin-bottom: 0;
 }
 
 .btn-group.actions-btn {
