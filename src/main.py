@@ -5,6 +5,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 import os
 
+from fastapi_csrf_protect import CsrfProtect
+from fastapi_csrf_protect.exceptions import CsrfProtectError
+from src.CSRF.CSRF_config import CsrfSettings
+
 # from routers.invoice_router import invoice_router
 from src.api.routers.auth_router import auth_router
 from src.api.routers.client_router import client_router
@@ -26,6 +30,15 @@ from src.api.models import *
 from src.core.shared import templates, STATIC_DIR
 
 app = FastAPI()
+
+# --- Exception Handler for CSRF errors ---
+@app.exception_handler(CsrfProtectError)
+def csrf_protect_exception_handler(request: Request, exc: CsrfProtectError):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={'detail': exc.message}
+    )
+# --- End Exception Handler ---
 
 
 # Serve static files with absolute path

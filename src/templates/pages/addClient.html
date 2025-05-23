@@ -20,6 +20,11 @@
         <div class="main-container">
             <div class="scrollable-container">
                 <form action="{{ url_for('update_client', client_id=client.id) if client else url_for('create_client') }}" method="post">
+                    <!-- CSRF Token -->
+                    {% if csrf_token %}
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    {% endif %}
+
                     <!-- Form Actions -->
                     <div class="form-actions">
                         <div class="text-right">
@@ -61,44 +66,68 @@
 {% block extra_js %}
 <script>
     $('form').on('submit', function(e) {
-            e.preventDefault();
-            const form = $(this);
-            const formData = new FormData(form[0]);
-            // Convert FormData to JSON object
-            const jsonData = Object.fromEntries(formData);
-            // Submit form using fetch
-            fetch(form.attr('action'), {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(jsonData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success!',
-                        text: data.message,
-                        showConfirmButton: false,
-                        timer: 1500
-                    }).then(() => {
-                        // location.reload();
-                    });
-                    form[0].reset();
-                } else {
-                    throw new Error(data.message);
-                }
-            })
-            .catch(error => {
+        e.preventDefault();
+        const form = $(this);
+        const formData = new FormData(form[0]);
+        const jsonData = Object.fromEntries(formData);
+        const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+        const isCreate = !form.attr('action').includes('update');
+
+    
+        // Remove csrf_token from jsonData as it's sent in header
+        delete jsonData.csrf_token;
+
+        fetch(form.attr('action'), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': csrfToken,
+                'Accept': 'application/json'
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify(jsonData)
+        })
+        .then(async response => {
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.message || 'Request failed');
+            }
+            return data;
+        })
+        .then(data => {
+            if (data.success) {
                 Swal.fire({
-                    icon: 'error',
-                    title: 'Oops...',
-                    text: error.message || 'Something went wrong!'
+                    icon: 'success',
+                    title: 'Success!',
+                    text: data.message,
+                    showConfirmButton: false,
+                    timer: 1500
+                }).then(() => {
+                    if (isCreate) {
+                        // Reset form for new client
+                        form[0].reset();
+                        // Optionally scroll to top
+                        window.scrollTo(0, 0);
+                    } else {
+                        // Redirect only for updates
+                        window.location.href = "{{ url_for('read_clients') }}";
+                    }
                 });
+            }
+        })
+        .catch(error => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.message
             });
         });
+    });
+
+    // Handle cancel button
+    $('.btn-default').on('click', function() {
+        window.location.href = "{{ url_for('read_clients') }}";
+    });
 </script>
     
 {% endblock %}
