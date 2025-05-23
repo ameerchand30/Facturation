@@ -10,10 +10,9 @@ class CsrfSettings(BaseSettings):
     secret_key: str = settings.CSRF_SECRET_KEY
     csrf_token_name: str = "csrf_token"
     csrf_header_name: str = "X-CSRF-Token"
-    # You can configure other settings like cookie name, header name, etc.
-    # For example:
-    # cookie_name: str = "my_csrf_token"
-    # header_name: str = "X-MY-CSRF-TOKEN"
+    token_location: str = "header"  # Changed from set to str
+    cookie_secure: bool = True
+    cookie_samesite: str = "lax"
 
     class Config:
         case_sensitive = True

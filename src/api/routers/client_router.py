@@ -11,7 +11,7 @@ from src.api.dependencies.auth import get_current_user, require_user_type
 from src.api.models.public.user import UserType
 
 
-from src.CSRF.CSRF_config import CsrfSettings
+
 from fastapi_csrf_protect import CsrfProtect
 from fastapi_csrf_protect.exceptions import CsrfProtectError
 
@@ -81,8 +81,8 @@ async def add_client_form(
     request: Request,
     db: Session = Depends(get_db),
     user: dict = Depends(require_user_type(UserType.ENTERPRISE)),
-    enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile),
-    csrf_protect: CsrfProtect = Depends()
+    enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile)
+    # csrf_protect: CsrfProtect = Depends()
 ):
 # Check if user is unauthorized
     if isinstance(user, (RedirectResponse, JSONResponse)):
@@ -93,13 +93,13 @@ async def add_client_form(
 
     try:
         # Initialize CSRF protection with settings
-        csrf_token =  csrf_protect.generate_csrf()
+        # csrf_token =  csrf_protect.generate_csrf()
         
         response = templates.TemplateResponse(
             "pages/addClient.html",
             {
                 "request": request,
-                "csrf_token": csrf_token,
+                # "csrf_token": csrf_token,
                 "client": None,
                 "current_page": "add_client",
                 "user": user,
@@ -107,7 +107,7 @@ async def add_client_form(
             }
         )
         # Set the CSRF token in an HttpOnly cookie
-        csrf_protect.set_csrf_cookie(csrf_token, response) 
+        # csrf_protect.set_csrf_cookie(csrf_token, response) 
         return response
     # Handle CSRF errors
     except Exception as e:
@@ -130,8 +130,8 @@ async def edit_client_form(
     request: Request, 
     db: Session = Depends(get_db),
     user: dict = Depends(require_user_type(UserType.ENTERPRISE)),
-    enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile),
-    csrf_protect: CsrfProtect = Depends()
+    enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile)
+    # csrf_protect: CsrfProtect = Depends()
 ):
     # Check if user is unauthorized
     if isinstance(user, (RedirectResponse, JSONResponse)):
@@ -159,7 +159,7 @@ async def edit_client_form(
             )
 
         # Generate CSRF token
-        csrf_token = csrf_protect.generate_csrf()
+        # csrf_token = csrf_protect.generate_csrf()
         
         # Create response with template
         response = templates.TemplateResponse(
@@ -170,12 +170,12 @@ async def edit_client_form(
                 "current_page": "edit_client",
                 "user": user,
                 #"enterprise_id": enterprise_profile.id,
-                "csrf_token": csrf_token
+                # "csrf_token": csrf_token
             }
         )
         
         # Set CSRF cookie
-        csrf_protect.set_csrf_cookie(csrf_token, response)
+        # csrf_protect.set_csrf_cookie(csrf_token, response)
         return response
 
     except Exception as e:
@@ -221,8 +221,8 @@ async def update_client(
     request: Request,
     db: Session = Depends(get_db),
     user: dict = Depends(require_user_type(UserType.ENTERPRISE)),
-    enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile),
-    csrf_protect: CsrfProtect = Depends()
+    enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile)
+    # csrf_protect: CsrfProtect = Depends()
 ):
 
     # Check if user is unauthorized
@@ -273,8 +273,8 @@ async def delete_client(
     request: Request,
     db: Session = Depends(get_db),
     user: dict = Depends(require_user_type(UserType.ENTERPRISE)),
-    enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile),
-    csrf_protect: CsrfProtect = Depends()
+    enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile)
+    # csrf_protect: CsrfProtect = Depends()
 ):
     # Check if user is unauthorized
     if isinstance(user, (RedirectResponse, JSONResponse)):
