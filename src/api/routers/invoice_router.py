@@ -21,6 +21,7 @@ from zoneinfo import ZoneInfo  # For Python 3.9+
 # to add client with enterprise profile
 from src.api.dependencies.enterprise import get_enterprise_profile
 from src.api.models.public.user import EnterpriseProfile
+from src.api.utils.auth_utils import check_authorization
 
 
 invoice_router = APIRouter(
@@ -31,6 +32,11 @@ invoice_router = APIRouter(
 # to show enterprise and customer data while creating inovice
 @invoice_router.get("/create", response_class=HTMLResponse, name="create_invoice_form")
 async def create_invoice_form(request: Request, db: Session = Depends(get_db), user: dict = Depends(require_user_type(UserType.ENTERPRISE)), enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile)):
+
+    # Check authorization
+    auth_check = check_authorization(user, redirect=True)
+    if auth_check:
+        return auth_check
     customers = db.query(Clients).filter(Clients.enterprise_profile_id == enterprise_profile.id).all()
     # Get the current date and time in the local timezone
     local_time = datetime.now(ZoneInfo("Europe/Paris"))
@@ -45,12 +51,21 @@ async def create_invoice_form(request: Request, db: Session = Depends(get_db), u
 # to show invoices
 @invoice_router.get("/read", response_class=HTMLResponse, name="read_invoices")
 def read_invoices(request: Request, db: Session = Depends(get_db), user: dict = Depends(require_user_type(UserType.ENTERPRISE)), enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile)):
+    # Check authorization
+    auth_check = check_authorization(user, redirect=True)
+    if auth_check:
+        return auth_check
     invoices = crud_invoice.get_invoices(db,enterprise_profile)
     return templates.TemplateResponse("pages/invoices.html", {"request": request, "invoices": invoices, "current_page": "read_invoices","user": user})
 
 # to edit the invocies form
 @invoice_router.get("/edit/{invoice_id}", response_class=HTMLResponse, name="edit_invoice_form")
 async def edit_invoice_form(invoice_id: int, request: Request, db: Session = Depends(get_db), user: dict = Depends(require_user_type(UserType.ENTERPRISE)), enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile)):
+    # Check authorization
+    auth_check = check_authorization(user, redirect=True)
+    if auth_check:
+        return auth_check
+    
     invoice = crud_invoice.get_invoice(db=db, invoice_id=invoice_id)
     if not invoice:
         raise HTTPException(status_code=404, detail="Invoice not found")
@@ -82,6 +97,10 @@ async def edit_invoice_form(invoice_id: int, request: Request, db: Session = Dep
 # to create new invoice
 @invoice_router.post("/", response_model=dict, name="create_invoice")
 def create_invoice(invoice: InvoiceCreate, db: Session = Depends(get_db), user: dict = Depends(require_user_type(UserType.ENTERPRISE)), enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile)):
+    # Check authorization
+    auth_check = check_authorization(user)
+    if auth_check:
+        return auth_check
     try:
         crud_invoice.create_invoice(db=db, db_invoice=invoice, enterprise_profile=enterprise_profile)
         return {"success": True, "message": "Client created successfully"}
@@ -91,7 +110,11 @@ def create_invoice(invoice: InvoiceCreate, db: Session = Depends(get_db), user: 
         return {"success": False, "message": str(e)}
 # to update invoice
 @invoice_router.post("/update/{invoice_id}", response_model=dict, name="update_invoice")
-async def update_invoice(invoice_id: int, invoice_data: InvoiceUpdate, db: Session = Depends(get_db)):
+async def update_invoice(invoice_id: int, invoice_data: InvoiceUpdate, db: Session = Depends(get_db), user: dict = Depends(require_user_type(UserType.ENTERPRISE)), enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile)):
+    # Check authorization
+    auth_check = check_authorization(user)
+    if auth_check:
+        return auth_check
     try:
         crud_invoice.update_invoice(db=db, invoice_id=invoice_id, invoice=invoice_data)
         return {"success": True, "message": "Enterprise created successfully"}
@@ -102,7 +125,11 @@ async def update_invoice(invoice_id: int, invoice_data: InvoiceUpdate, db: Sessi
 
 # to delete invoice
 @invoice_router.delete("/delete/{invoice_id}", response_model=dict, name="delete_invoice")
-async def delete_invoice(invoice_id: int,db: Session = Depends(get_db)):
+async def delete_invoice(invoice_id: int,db: Session = Depends(get_db), user: dict = Depends(require_user_type(UserType.ENTERPRISE)), enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile)):
+    # Check authorization
+    auth_check = check_authorization(user)
+    if auth_check:
+        return auth_check
     try:
         crud_invoice.delete_invoice(db=db ,invoice_id=invoice_id)
         return {"success": True, "message": "Client Delted successfully"}

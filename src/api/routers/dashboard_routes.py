@@ -19,6 +19,8 @@ from src.api.dependencies.auth import get_current_user, require_user_type
 from src.api.dependencies.enterprise import get_enterprise_profile
 from src.api.models.public.user import EnterpriseProfile
 
+from src.api.utils.auth_utils import check_authorization
+
 
 
 dashboard_router = APIRouter(tags=["Dashboard"])

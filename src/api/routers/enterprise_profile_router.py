@@ -12,6 +12,8 @@ from src.api.models.public.user import UserType
 # Schemas
 from src.api.schemas.enterprise_profile import EnterpriseProfileUpdate
 
+from src.api.utils.auth_utils import check_authorization
+
 enterprise_profile_router = APIRouter(
     prefix="/enterprise",
     tags=["Enterprise"],
@@ -20,6 +22,10 @@ enterprise_profile_router = APIRouter(
 
 @enterprise_profile_router.get("/profile", response_class=HTMLResponse, name="enterprise_profile")
 async def enterprise_profile(request: Request, db: Session = Depends(get_db), user: dict = Depends(require_user_type(UserType.ENTERPRISE))):
+    # Check authorization
+    auth_check = check_authorization(user, redirect=True)
+    if auth_check:
+        return auth_check
     print("Fetching enterprise profile",request.session.get("user_id"))
     profile = db.query(EnterpriseProfile).filter_by(user_id=user["sub"]).first()
     return templates.TemplateResponse(
@@ -34,6 +40,10 @@ async def update_enterprise_profile(
     db: Session = Depends(get_db),
     user: dict = Depends(require_user_type(UserType.ENTERPRISE))
 ):
+    # Check authorization
+    auth_check = check_authorization(user, redirect=True)
+    if auth_check:
+        return auth_check
     profile = db.query(EnterpriseProfile).filter_by(user_id=user["sub"]).first()
     
     if not profile:
@@ -57,6 +67,11 @@ async def upload_logo(
     logo: UploadFile = File(...),
     user: dict = Depends(require_user_type(UserType.ENTERPRISE))
 ):
+
+    # Check authorization
+    auth_check = check_authorization(user, redirect=True)
+    if auth_check:
+        return auth_check
     profile = db.query(EnterpriseProfile).filter_by(user_id=user["sub"]).first()
     if not profile:
         raise HTTPException(status_code=404, detail="Enterprise profile not found")

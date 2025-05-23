@@ -15,6 +15,7 @@ from src.api.models.public.user import UserType
 # to add Enterprise with enterprise profile
 from src.api.dependencies.enterprise import get_enterprise_profile
 from src.api.models.public.user import EnterpriseProfile
+from src.api.utils.auth_utils import check_authorization
 
 
 
@@ -27,11 +28,20 @@ enterprise_router = APIRouter(
 # show the enterprise page
 @enterprise_router.get("/", response_class=HTMLResponse, name="read_enterprises")
 def read_enterprises(request: Request ,skip: int = 0, limit: int = 100, db: Session = Depends(get_db), user: dict = Depends(require_user_type(UserType.ENTERPRISE)),enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile)):
+    # Check authorization
+    auth_check = check_authorization(user, redirect=True)
+    if auth_check:
+        return auth_check
     enterprises = db.query(Enterprise, Clients).join(Clients).filter(Enterprise.enterprise_profile_id == enterprise_profile.id,Clients.enterprise_profile_id == enterprise_profile.id).all()
     return templates.TemplateResponse("pages/enterprise.html", {"request": request, "enterprises": enterprises, "current_page": "view_enterprise", "user": user})
 # show the enterprise Form page with the customer data
 @enterprise_router.get("/add", response_class=HTMLResponse, name="add_enterprise_form")
-async def add_enterprise_form(request: Request, db: Session = Depends(get_db), user: dict = Depends(require_user_type(UserType.ENTERPRISE))):
+async def add_enterprise_form(request: Request, db: Session = Depends(get_db), user: dict = Depends(require_user_type(UserType.ENTERPRISE)), enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile)):
+    # Check authorization
+    auth_check = check_authorization(user, redirect=True)
+    if auth_check:
+        return auth_check
+    # Get all customers
     customers = db.query(Clients).all()
     customer_data = {customer.name: {"customer_id": customer.id,"email": customer.email,"notes": customer.notes} for customer in customers}
     return templates.TemplateResponse("pages/addEnterprise.html", {"request": request,"customer_data": customer_data, "customers": customers, "current_page": "add_enterprise", "user": user})
@@ -39,6 +49,11 @@ async def add_enterprise_form(request: Request, db: Session = Depends(get_db), u
 # create enterprise to the database
 @enterprise_router.post("/", response_model=dict, name="create_enterprise")
 def create_enterprise( enterprise : EnterpriseCreate, db: Session = Depends(get_db), user: dict = Depends(require_user_type(UserType.ENTERPRISE)),enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile)):
+    # Check authorization
+    auth_check = check_authorization(user, redirect=True)
+    if auth_check:
+        return auth_check
+
     # print(enterprise.__dict__)
     try:
         enterprise_dict = enterprise.model_dump()
@@ -52,7 +67,11 @@ def create_enterprise( enterprise : EnterpriseCreate, db: Session = Depends(get_
 
 # link the edit enterprise page
 @enterprise_router.get("/edit/{enterprise_id}", response_class=HTMLResponse, name="edit_enterprise_form")
-def edit_enterprise_form(enterprise_id: int, request: Request, db: Session = Depends(get_db), user: dict = Depends(require_user_type(UserType.ENTERPRISE))):
+def edit_enterprise_form(enterprise_id: int, request: Request, db: Session = Depends(get_db), user: dict = Depends(require_user_type(UserType.ENTERPRISE)), enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile)):
+    # Check authorization
+    auth_check = check_authorization(user, redirect=True)
+    if auth_check:
+        return auth_check
     enterprise = crud_enterprise.get_enterprise(db, enterprise_id=enterprise_id)
     if enterprise is None:
         raise HTTPException(status_code=404, detail="Enterprise not found")
@@ -62,7 +81,11 @@ def edit_enterprise_form(enterprise_id: int, request: Request, db: Session = Dep
 
 # update enterprise to the database
 @enterprise_router.post("/update/{enterprise_id}", response_model=dict, name="update_enterprise")
-def update_enterprise(enterprise_id: int, enterprise : EnterpriseUpdate ,db: Session = Depends(get_db)):
+def update_enterprise(enterprise_id: int, enterprise : EnterpriseUpdate ,db: Session = Depends(get_db), user: dict = Depends(require_user_type(UserType.ENTERPRISE)),enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile)):
+    # Check authorization
+    auth_check = check_authorization(user, redirect=True)
+    if auth_check:
+        return auth_check
     try:
         enterprise_dict = enterprise.model_dump()
         db_enterprise = Enterprise(**enterprise_dict)
@@ -74,7 +97,11 @@ def update_enterprise(enterprise_id: int, enterprise : EnterpriseUpdate ,db: Ses
         return {"success": False, "message": str(e)}
 # to delete the enterprise 
 @enterprise_router.delete("/delete/{enterprise_id}", response_model = dict, name="delete_enterprise")
-def delete_enterprise(enterprise_id: int, request: Request ,db: Session = Depends(get_db)):
+def delete_enterprise(enterprise_id: int, request: Request ,db: Session = Depends(get_db), user: dict = Depends(require_user_type(UserType.ENTERPRISE)),enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile)):
+    # Check authorization
+    auth_check = check_authorization(user, redirect=True)
+    if auth_check:
+        return auth_check
     try:
         crud_enterprise.delete_enterprise(db,enterprise_id)
         return {"success": True, "message": "Product Deleted successfully"}

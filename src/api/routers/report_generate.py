@@ -22,6 +22,7 @@ from src.api.models.public.user import UserType
 # to add client with enterprise profile
 from src.api.dependencies.enterprise import get_enterprise_profile
 from src.api.models.public.user import EnterpriseProfile
+from src.api.utils.auth_utils import check_authorization
 
 
 report_router = APIRouter(
@@ -32,6 +33,10 @@ report_router = APIRouter(
 
 @report_router.get("/invoiceNumber/{invoice_id}", response_class=HTMLResponse, name="getReportForm")
 async def create_report_form(invoice_id: int  ,request: Request, db: Session = Depends(get_db), user: dict = Depends(require_user_type(UserType.ENTERPRISE)), enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile)):
+    # Check authorization
+    auth_check = check_authorization(user, redirect=True)
+    if auth_check:
+        return auth_check
     invoice_data = get_invoice_details(db, invoice_id)
     print("enterprise_profile in get",enterprise_profile)
     return templates.TemplateResponse("pages/generateReport.html", {
@@ -51,6 +56,11 @@ async def generate_pdf(
     user: dict = Depends(require_user_type(UserType.ENTERPRISE)),
     enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile) # Add this line to get the enterprise profile
 ):
+
+    # Check authorization
+    auth_check = check_authorization(user, redirect=True)
+    if auth_check:
+        return auth_check
     try:
         invoice_data = get_invoice_details(db, invoice_id)
         html_content = templates.TemplateResponse(
