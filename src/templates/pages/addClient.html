@@ -21,9 +21,7 @@
             <div class="scrollable-container">
                 <form action="{{ url_for('update_client', client_id=client.id) if client else url_for('create_client') }}" method="post">
                     <!-- CSRF Token -->
-                    {% if csrf_token %}
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                    {% endif %}
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token if csrf_token else '' }}">
 
                     <!-- Form Actions -->
                     <div class="form-actions">
