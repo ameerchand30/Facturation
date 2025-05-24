@@ -1,6 +1,3 @@
-
-
-
 <style>
 .navbar-nav > li > .dropdown-menu {
     margin-top: 0;
@@ -56,10 +53,10 @@
             <div id="navbar" class="navbar-collapse collapse">
                 <ul class="nav navbar-nav navbar-right">
                     {% if not user %}
-                        <li><a href="#features">Features</a></li>
-                        <li><a href="#testimonials">Testimonials</a></li>
-                        <li><a href="#pricing">Pricing</a></li>
-                        <li><a href="#contact">Contact</a></li>
+                        <li><a href="{% if request.path != '/' %}/{% endif %}#features" class="nav-link">Features</a></li>
+                        <li><a href="{% if request.path != '/' %}/{% endif %}#testimonials" class="nav-link">Testimonials</a></li>
+                        <li><a href="{% if request.path != '/' %}/{% endif %}#pricing" class="nav-link">Pricing</a></li>
+                        <li><a href="{% if request.path != '/' %}/{% endif %}#contact" class="nav-link">Contact</a></li>
                         <li><a href="/login" class="btn btn-primary btn-sm" style="margin-top: 10px;">Get Started</a></li>
                     {% else %}
                         {% if user.user_type == 'CLIENT' %}
@@ -87,3 +84,51 @@
             </div>
         </div>
     </nav>
+
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle navigation links
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', function(e) {
+            const href = this.getAttribute('href');
+            
+            // If it's a hash link and we're not on the home page
+            if (href.includes('#') && window.location.pathname !== '/') {
+                e.preventDefault();
+                // Fix: Remove the extra slash
+                window.location.href = '/' + href.replace(/^\//, '');
+                return;
+            }
+            
+            // If we're on the home page and it's a hash link
+            if (href.startsWith('#')) {
+                e.preventDefault();
+                const targetId = href.replace('#', '');
+                const targetElement = document.getElementById(targetId);
+                
+                if (targetElement) {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start',
+                        inline: 'nearest'
+                    });
+                }
+            }
+        });
+    });
+
+    // Check for hash in URL after page load
+    if (window.location.hash && window.location.pathname === '/') {
+        const targetElement = document.querySelector(window.location.hash);
+        if (targetElement) {
+            setTimeout(() => {
+                targetElement.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start',
+                    inline: 'nearest'
+                });
+            }, 100);
+        }
+    }
+});
+</script>
