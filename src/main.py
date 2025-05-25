@@ -59,10 +59,27 @@ app.add_middleware(SessionMiddleware, secret_key="your-secret-key")
 @app.get("/")
 async def root(request: Request):
     return templates.TemplateResponse("pages/dashboard.html", {"request": request})
+
+""" # Initialize CSRF protection
+csrf_protect = CsrfProtect()
+csrf_protect.init_app(app)
+# Handle CSRF errors globally
+@app.exception_handler(CsrfProtectError)
+async def csrf_error_handler(request: Request, exc: CsrfProtectError):
+    return templates.TemplateResponse("errors/csrf_error.html", {"request": request, "error": str(exc)})
+# Include CSRF protection in the app
+app.add_middleware(CsrfProtect) """
+# Include routers
+app.include_router(auth_router)
 app.include_router(product_router)
 app.include_router(client_router)
 app.include_router(enterprise_router)
 app.include_router(invoice_router)
+app.include_router(dashboard_router)
+app.include_router(enterprise_profile_router)
+app.include_router(report_router)
+app.include_router(client_invoices_router)
+
 
 # Include routers
 # app.include_router(auth)

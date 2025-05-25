@@ -222,3 +222,39 @@ async def delete_invoice(invoice_id: int,db: Session = Depends(get_db), user: di
     except Exception as e:
         print(e)
         return {"success": False, "message": str(e)}
+
+
+# to search clients for jQuery autocomplete
+@invoice_router.get("/search_clients")
+async def search_clients(
+    term: str,
+    db: Session = Depends(get_db),
+    user: dict = Depends(require_user_type(UserType.ENTERPRISE)),
+    enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile)
+):
+    try:
+        # Search clients with name matching the term
+        clients = db.query(Clients).filter(
+            Clients.enterprise_profile_id == enterprise_profile.id,
+            Clients.name.ilike(f"%{term}%")
+        ).all()
+
+        # Format response for jQuery autocomplete
+        results = [
+            {
+                "id": client.id,
+                "label": client.name,  # This is what shows in the dropdown
+                "value": client.name,  # This is what goes into the input
+                "email": client.email
+            }
+            for client in clients
+        ]
+
+        return JSONResponse(content=results)
+
+    except Exception as e:
+        print(f"Error searching clients: {e}")
+        return JSONResponse(
+            content={"error": "Error searching clients"},
+            status_code=500
+        )

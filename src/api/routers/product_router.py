@@ -306,6 +306,45 @@ async def delete_product(
             content={"success": False, "message": str(e)}
         )
 
+@product_router.get("/search_products", name="search_products")
+async def search_products(
+    term: str,
+    db: Session = Depends(get_db),
+    user: dict = Depends(require_user_type(UserType.ENTERPRISE)),
+    enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile)
+):
+    try:
+        # Search products with name matching the term
+        products = db.query(ProductModel).filter(
+            ProductModel.enterprise_profile_id == enterprise_profile.id,
+            or_(
+                ProductModel.name.ilike(f"%{term}%"),
+                ProductModel.ref_number.ilike(f"%{term}%")
+            )
+        ).all()
+
+        # Format response for jQuery autocomplete
+        results = [
+            {
+                "id": product.id,
+                "label": f"{product.name} ({product.ref_number})",  # What shows in dropdown
+                "value": product.name,  # What goes in the input
+                "description": product.description,
+                "unit_price": float(product.price),  # Convert Decimal to float for JSON
+                "ref_number": product.ref_number
+            }
+            for product in products
+        ]
+
+        return JSONResponse(content=results)
+
+    except Exception as e:
+        print(f"Error searching products: {e}")
+        return JSONResponse(
+            content={"error": "Error searching products"},
+            status_code=500
+        )
+
 
 
 
