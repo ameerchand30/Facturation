@@ -1,0 +1,707 @@
+{% extends "layout/base.html" %}
+
+{% block title %}{{ "Update Client" if client else "Add Client" }} - Chand Invoices{% endblock %}
+
+{% block page_css %}
+<style>
+    /* Page-specific styles for the modern client form */
+    .page-header {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--gradient);
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .page-icon {
+        width: 50px;
+        height: 50px;
+        background: var(--gradient);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+    }
+
+    .breadcrumb-modern {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+    }
+
+    .breadcrumb-modern a {
+        color: var(--primary);
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .breadcrumb-modern a:hover {
+        color: var(--primary-dark);
+    }
+
+    .breadcrumb-separator {
+        color: var(--text-secondary);
+        margin: 0 0.5rem;
+    }
+
+    .form-container {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+    }
+
+    .form-actions-header {
+        background: var(--secondary);
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .form-actions-header h3 {
+        margin: 0;
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+
+    .form-actions-buttons {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .modern-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow);
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+    .modern-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .card-header-modern {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+        padding: 1.5rem 2rem;
+        border-bottom: none;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .card-icon {
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .card-title-modern {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .card-body-modern {
+        padding: 2rem;
+    }
+
+    .form-group-modern {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label-modern {
+        display: block;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .form-control-modern {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        border: 2px solid var(--border);
+        border-radius: 12px;
+        background: var(--secondary);
+        font-size: 0.9rem;
+        color: var(--text-primary);
+        transition: all 0.3s ease;
+        font-family: inherit;
+    }
+
+    .form-control-modern:focus {
+        outline: none;
+        border-color: var(--primary);
+        background: white;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        transform: translateY(-1px);
+    }
+
+    .form-control-modern::placeholder {
+        color: var(--text-secondary);
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .btn-modern-large {
+        padding: 1rem 2rem;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        text-decoration: none;
+        font-size: 0.95rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-modern-large::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s;
+    }
+
+    .btn-modern-large:hover::before {
+        left: 100%;
+    }
+
+    .btn-primary-modern {
+        background: var(--gradient);
+        color: white;
+        box-shadow: var(--shadow);
+    }
+
+    .btn-primary-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .btn-secondary-modern {
+        background: transparent;
+        border: 2px solid var(--border);
+        color: var(--text-primary);
+    }
+
+    .btn-secondary-modern:hover {
+        background: var(--light);
+        border-color: var(--primary);
+        color: var(--primary);
+        transform: translateY(-1px);
+    }
+
+    .input-group {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .input-icon {
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+        
+        .form-actions-header {
+            flex-direction: column;
+            gap: 1rem;
+            text-align: center;
+        }
+        
+        .form-actions-buttons {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .page-title {
+            font-size: 1.5rem;
+        }
+    }
+
+    /* Animation for form loading */
+    .fade-in-up {
+        animation: fadeInUp 0.6s ease forwards;
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    @keyframes fadeInUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .stagger-1 { animation-delay: 0.1s; }
+    .stagger-2 { animation-delay: 0.2s; }
+    .stagger-3 { animation-delay: 0.3s; }
+    .stagger-4 { animation-delay: 0.4s; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Modern Page Header -->
+    <div class="page-header fade-in-up">
+        <div class="page-title">
+            <div class="page-icon">
+                <i class="fas fa-user-plus"></i>
+            </div>
+            {{ "Update Client" if client else "Add Client" }}
+        </div>
+        <nav class="breadcrumb-modern">
+            <a href="#"><i class="fas fa-home"></i> Home</a>
+            <span class="breadcrumb-separator">/</span>
+            <a href="#">Clients</a>
+            <span class="breadcrumb-separator">/</span>
+            <span>{{ "Update Client" if client else "Add Client" }}</span>
+        </nav>
+    </div>
+
+    <!-- Form Container -->
+    <div class="form-container fade-in-up stagger-1">
+        <!-- Form Actions Header -->
+        <div class="form-actions-header">
+            <h3>Client Information</h3>
+            <div class="form-actions-buttons">
+                <button type="button" class="btn-modern-large btn-secondary-modern" id="cancelBtn">
+                    <i class="fas fa-times"></i>
+                    Cancel
+                </button>
+                <button type="submit" form="clientForm" class="btn-modern-large btn-primary-modern">
+                    <i class="fas fa-save"></i>
+                    {{ "Update Client" if client else "Save Client" }}
+                </button>
+            </div>
+        </div>
+
+        <!-- Form Content -->
+        <div style="padding: 2rem;">
+            <form id="clientForm" action="{{ url_for('update_client', client_id=client.id) if client else url_for('create_client') }}" method="post">
+                <!-- CSRF Token -->
+                <input type="hidden" name="csrf_token" value="{{ csrf_token if csrf_token else '' }}">
+
+                <div class="row">
+                    <!-- Left Column -->
+                    <div class="col-lg-6">
+                        <!-- Company Details Card -->
+                        <div class="modern-card fade-in-up stagger-2">
+                            <div class="card-header-modern">
+                                <div class="card-icon">
+                                    <i class="fas fa-building"></i>
+                                </div>
+                                <h4 class="card-title-modern">Company Details</h4>
+                            </div>
+                            <div class="card-body-modern">
+                                <div class="form-group-modern">
+                                    <label class="form-label-modern">
+                                        <i class="fas fa-building input-icon"></i>
+                                        Company Name *
+                                    </label>
+                                    <input type="text" name="company_name" class="form-control-modern" 
+                                           placeholder="Enter company name" 
+                                           value="{{ client.company_name if client else '' }}" required>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group-modern">
+                                        <label class="form-label-modern">
+                                            <i class="fas fa-envelope input-icon"></i>
+                                            Email
+                                        </label>
+                                        <input type="email" name="email" class="form-control-modern" 
+                                               placeholder="company@example.com"
+                                               value="{{ client.email if client else '' }}">
+                                    </div>
+                                    <div class="form-group-modern">
+                                        <label class="form-label-modern">
+                                            <i class="fas fa-phone input-icon"></i>
+                                            Phone
+                                        </label>
+                                        <input type="tel" name="phone" class="form-control-modern" 
+                                               placeholder="+1 (555) 123-4567"
+                                               value="{{ client.phone if client else '' }}">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group-modern">
+                                        <label class="form-label-modern">
+                                            <i class="fas fa-globe input-icon"></i>
+                                            Website
+                                        </label>
+                                        <input type="url" name="website" class="form-control-modern" 
+                                               placeholder="https://www.company.com"
+                                               value="{{ client.website if client else '' }}">
+                                    </div>
+                                    <div class="form-group-modern">
+                                        <label class="form-label-modern">
+                                            <i class="fas fa-hashtag input-icon"></i>
+                                            Tax ID
+                                        </label>
+                                        <input type="text" name="tax_id" class="form-control-modern" 
+                                               placeholder="Tax identification number"
+                                               value="{{ client.tax_id if client else '' }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Address Card -->
+                        <div class="modern-card fade-in-up stagger-3">
+                            <div class="card-header-modern">
+                                <div class="card-icon">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </div>
+                                <h4 class="card-title-modern">Address Information</h4>
+                            </div>
+                            <div class="card-body-modern">
+                                <div class="form-group-modern">
+                                    <label class="form-label-modern">
+                                        <i class="fas fa-road input-icon"></i>
+                                        Street Address
+                                    </label>
+                                    <input type="text" name="street_address" class="form-control-modern" 
+                                           placeholder="123 Main Street"
+                                           value="{{ client.street_address if client else '' }}">
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group-modern">
+                                        <label class="form-label-modern">
+                                            <i class="fas fa-city input-icon"></i>
+                                            City
+                                        </label>
+                                        <input type="text" name="city" class="form-control-modern" 
+                                               placeholder="City"
+                                               value="{{ client.city if client else '' }}">
+                                    </div>
+                                    <div class="form-group-modern">
+                                        <label class="form-label-modern">
+                                            <i class="fas fa-map input-icon"></i>
+                                            State/Province
+                                        </label>
+                                        <input type="text" name="state" class="form-control-modern" 
+                                               placeholder="State or Province"
+                                               value="{{ client.state if client else '' }}">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group-modern">
+                                        <label class="form-label-modern">
+                                            <i class="fas fa-mail-bulk input-icon"></i>
+                                            ZIP/Postal Code
+                                        </label>
+                                        <input type="text" name="postal_code" class="form-control-modern" 
+                                               placeholder="12345"
+                                               value="{{ client.postal_code if client else '' }}">
+                                    </div>
+                                    <div class="form-group-modern">
+                                        <label class="form-label-modern">
+                                            <i class="fas fa-flag input-icon"></i>
+                                            Country
+                                        </label>
+                                        <input type="text" name="country" class="form-control-modern" 
+                                               placeholder="Country"
+                                               value="{{ client.country if client else '' }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column -->
+                    <div class="col-lg-6">
+                        <!-- Contact Person Card -->
+                        <div class="modern-card fade-in-up stagger-3">
+                            <div class="card-header-modern">
+                                <div class="card-icon">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <h4 class="card-title-modern">Contact Person</h4>
+                            </div>
+                            <div class="card-body-modern">
+                                <div class="form-row">
+                                    <div class="form-group-modern">
+                                        <label class="form-label-modern">
+                                            <i class="fas fa-user input-icon"></i>
+                                            First Name
+                                        </label>
+                                        <input type="text" name="contact_first_name" class="form-control-modern" 
+                                               placeholder="John"
+                                               value="{{ client.contact_first_name if client else '' }}">
+                                    </div>
+                                    <div class="form-group-modern">
+                                        <label class="form-label-modern">
+                                            <i class="fas fa-user input-icon"></i>
+                                            Last Name
+                                        </label>
+                                        <input type="text" name="contact_last_name" class="form-control-modern" 
+                                               placeholder="Doe"
+                                               value="{{ client.contact_last_name if client else '' }}">
+                                    </div>
+                                </div>
+                                <div class="form-group-modern">
+                                    <label class="form-label-modern">
+                                        <i class="fas fa-envelope input-icon"></i>
+                                        Contact Email
+                                    </label>
+                                    <input type="email" name="contact_email" class="form-control-modern" 
+                                           placeholder="john.doe@company.com"
+                                           value="{{ client.contact_email if client else '' }}">
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group-modern">
+                                        <label class="form-label-modern">
+                                            <i class="fas fa-phone input-icon"></i>
+                                            Contact Phone
+                                        </label>
+                                        <input type="tel" name="contact_phone" class="form-control-modern" 
+                                               placeholder="+1 (555) 123-4567"
+                                               value="{{ client.contact_phone if client else '' }}">
+                                    </div>
+                                    <div class="form-group-modern">
+                                        <label class="form-label-modern">
+                                            <i class="fas fa-briefcase input-icon"></i>
+                                            Position
+                                        </label>
+                                        <input type="text" name="contact_position" class="form-control-modern" 
+                                               placeholder="Manager"
+                                               value="{{ client.contact_position if client else '' }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Additional Information Card -->
+                        <div class="modern-card fade-in-up stagger-4">
+                            <div class="card-header-modern">
+                                <div class="card-icon">
+                                    <i class="fas fa-info-circle"></i>
+                                </div>
+                                <h4 class="card-title-modern">Additional Information</h4>
+                            </div>
+                            <div class="card-body-modern">
+                                <div class="form-group-modern">
+                                    <label class="form-label-modern">
+                                        <i class="fas fa-sticky-note input-icon"></i>
+                                        Notes
+                                    </label>
+                                    <textarea name="notes" class="form-control-modern" rows="6" 
+                                              placeholder="Add any additional notes about this client..."
+                                              style="resize: vertical; min-height: 120px;">{{ client.notes if client else '' }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Form submission handler with modern UX
+$('#clientForm').on('submit', function(e) {
+    e.preventDefault();
+    const form = $(this);
+    const submitBtn = $('button[type="submit"]');
+    const originalText = submitBtn.html();
+    
+    // Disable submit button and show loading state
+    submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Saving...');
+    
+    const formData = new FormData(form[0]);
+    const jsonData = Object.fromEntries(formData);
+    const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+    const isCreate = !form.attr('action').includes('update');
+
+    // Remove csrf_token from jsonData as it's sent in header
+    delete jsonData.csrf_token;
+
+    fetch(form.attr('action'), {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfToken,
+            'Accept': 'application/json'
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify(jsonData)
+    })
+    .then(async response => {
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.message || 'Request failed');
+        }
+        return data;
+    })
+    .then(data => {
+        if (data.success) {
+            // Success notification with modern styling
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: data.message,
+                background: 'rgba(255, 255, 255, 0.95)',
+                backdrop: 'rgba(0, 0, 0, 0.4)',
+                showConfirmButton: false,
+                timer: 2000,
+                timerProgressBar: true,
+                toast: true,
+                position: 'top-end'
+            }).then(() => {
+                if (isCreate) {
+                    // Reset form for new client
+                    form[0].reset();
+                    // Smooth scroll to top
+                    $('html, body').animate({ scrollTop: 0 }, 600);
+                    
+                    // Show success animation
+                    $('.modern-card').addClass('fade-in-up');
+                } else {
+                    // Redirect for updates with fade out effect
+                    $('body').fadeOut(300, function() {
+                        window.location.href = "{{ url_for('read_clients') }}";
+                    });
+                }
+            });
+        }
+    })
+    .catch(error => {
+        // Error notification with modern styling
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: error.message,
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdrop: 'rgba(0, 0, 0, 0.4)',
+            confirmButtonColor: '#ef4444'
+        });
+    })
+    .finally(() => {
+        // Re-enable submit button
+        submitBtn.prop('disabled', false).html(originalText);
+    });
+});
+
+// Handle cancel button with confirmation
+$('#cancelBtn').on('click', function() {
+    const form = $('#clientForm');
+    const hasChanges = form.serialize() !== form.data('original-data');
+    
+    if (hasChanges) {
+        Swal.fire({
+            title: 'Unsaved Changes',
+            text: 'You have unsaved changes. Are you sure you want to leave?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Yes, leave',
+            cancelButtonText: 'Stay',
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdrop: 'rgba(0, 0, 0, 0.4)'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $('body').fadeOut(300, function() {
+                    window.location.href = "{{ url_for('read_clients') }}";
+                });
+            }
+        });
+    } else {
+        $('body').fadeOut(300, function() {
+            window.location.href = "{{ url_for('read_clients') }}";
+        });
+    }
+});
+
+// Store original form data for change detection
+$(document).ready(function() {
+    $('#clientForm').data('original-data', $('#clientForm').serialize());
+    
+    // Add focus effects to form controls
+    $('.form-control-modern').on('focus', function() {
+        $(this).closest('.modern-card').addClass('shadow-lg');
+    }).on('blur', function() {
+        $(this).closest('.modern-card').removeClass('shadow-lg');
+    });
+    
+    // Initialize AOS animations if available
+    if (typeof AOS !== 'undefined') {
+        AOS.init({
+            duration: 600,
+            easing: 'ease-in-out',
+            once: true
+        });
+    }
+});
+
+// Auto-resize textarea
+$('textarea').on('input', function() {
+    this.style.height = 'auto';
+    this.style.height = (this.scrollHeight) + 'px';
+});
+</script>
+{% endblock %}
