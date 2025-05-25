@@ -61,6 +61,7 @@ async def root(request: Request):
     return templates.TemplateResponse("pages/dashboard.html", {"request": request})
 app.include_router(product_router)
 app.include_router(client_router)
+app.include_router(enterprise_router)
 
 # Include routers
 # app.include_router(auth)

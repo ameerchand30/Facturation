@@ -18,7 +18,7 @@
                 </a>
             </div>
             <div class="nav-item">
-                <a href="#" class="nav-link">
+                <a href="{{ url_for('read_enterprises') }}" class="nav-link {% if request.url.path.startswith('/enterprises') %}active{% endif %}">
                     <i class="nav-icon fas fa-building"></i>
                     <span class="nav-text">Enterprise</span>
                 </a>

@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 from typing import List
 from src.core.shared import templates
 
@@ -27,13 +28,103 @@ enterprise_router = APIRouter(
 
 # show the enterprise page
 @enterprise_router.get("/", response_class=HTMLResponse, name="read_enterprises")
-def read_enterprises(request: Request ,skip: int = 0, limit: int = 100, db: Session = Depends(get_db), user: dict = Depends(require_user_type(UserType.ENTERPRISE)),enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile)):
+def read_enterprises(
+    request: Request,
+    db: Session = Depends(get_db),
+    user: dict = Depends(require_user_type(UserType.ENTERPRISE)),
+    enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile),
+    page: int = 1,
+    per_page: int = 10,
+    search: str = None,
+    sort: str = "id",
+    order: str = "desc"
+):
     # Check authorization
     auth_check = check_authorization(user, redirect=True)
     if auth_check:
         return auth_check
-    enterprises = db.query(Enterprise, Clients).join(Clients).filter(Enterprise.enterprise_profile_id == enterprise_profile.id,Clients.enterprise_profile_id == enterprise_profile.id).all()
-    return templates.TemplateResponse("pages/enterprise.html", {"request": request, "enterprises": enterprises, "current_page": "view_enterprise", "user": user})
+
+    try:
+        # Ensure valid pagination parameters
+        page = max(1, page)
+        per_page = min(max(10, per_page), 100)
+
+        # Base query with join
+        query = db.query(Enterprise, Clients).join(Clients).filter(
+            Enterprise.enterprise_profile_id == enterprise_profile.id,
+            Clients.enterprise_profile_id == enterprise_profile.id
+        )
+
+        # Apply search if provided
+        if search:
+            search_term = f"%{search}%"
+            query = query.filter(
+                or_(
+                    Enterprise.name.ilike(search_term),
+                    Enterprise.siretNo.ilike(search_term),
+                    Clients.name.ilike(search_term),
+                    Clients.email.ilike(search_term)
+                )
+            )
+
+        # Get total count for pagination
+        total_items = query.count()
+        total_pages = max(1, (total_items + per_page - 1) // per_page)
+        
+        # Adjust page if it exceeds total pages
+        page = min(page, total_pages)
+
+        # Apply sorting
+        if sort == "name":
+            sort_column = Enterprise.name
+        elif sort == "siretNo":
+            sort_column = Enterprise.siretNo
+        elif sort == "client_name":
+            sort_column = Clients.name
+        elif sort == "client_email":
+            sort_column = Clients.email
+        else:
+            sort_column = Enterprise.id
+
+        if order == "asc":
+            query = query.order_by(sort_column.asc())
+        else:
+            query = query.order_by(sort_column.desc())
+
+        # Apply pagination
+        offset = (page - 1) * per_page
+        enterprises = query.offset(offset).limit(per_page).all()
+
+        return templates.TemplateResponse(
+            "pages/enterprise.html",
+            {
+                "request": request,
+                "enterprises": enterprises,
+                "current_page": "view_enterprise",
+                "page_number": page,
+                "total_pages": total_pages,
+                "per_page": per_page,
+                "total_items": total_items,
+                "search": search,
+                "sort": sort,
+                "order": order,
+                "user": user
+            }
+        )
+
+    except Exception as e:
+        print(f"Error fetching enterprises: {e}")
+        return templates.TemplateResponse(
+            "pages/error.html",
+            {
+                "request": request,
+                "error_message": "Error loading enterprises",
+                "current_page": "error",
+                "user": user
+            },
+            status_code=500
+        )
+
 # show the enterprise Form page with the customer data
 @enterprise_router.get("/add", response_class=HTMLResponse, name="add_enterprise_form")
 async def add_enterprise_form(request: Request, db: Session = Depends(get_db), user: dict = Depends(require_user_type(UserType.ENTERPRISE)), enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile)):
