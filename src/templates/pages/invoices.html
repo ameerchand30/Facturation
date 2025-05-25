@@ -1,0 +1,699 @@
+{% extends "layout/base.html" %}
+
+{% block title %}Invoices - Chand Invoices{% endblock %}
+
+{% block page_css %}
+<style>
+    /* Page-specific styles */
+    .page-header {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .breadcrumb-modern {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    .breadcrumb-modern a {
+        color: var(--primary);
+        text-decoration: none;
+        transition: color 0.2s ease;
+    }
+
+    .breadcrumb-modern a:hover {
+        color: var(--primary-dark);
+    }
+
+    /* Filter Section */
+    .filter-section {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        padding: 1.5rem 2rem;
+        margin-bottom: 2rem;
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+    }
+
+    .filter-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .filter-left {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .filter-right {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .modern-dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    .dropdown-toggle {
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+    }
+
+    .dropdown-toggle:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow);
+    }
+
+    .dropdown-menu-modern {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        box-shadow: var(--shadow-lg);
+        min-width: 200px;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all 0.3s ease;
+    }
+
+    .dropdown-menu-modern.show {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .dropdown-item-modern {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+        color: var(--text-primary);
+        text-decoration: none;
+        transition: all 0.2s ease;
+        border-radius: 8px;
+        margin: 0.25rem;
+    }
+
+    .dropdown-item-modern:hover {
+        background: var(--primary);
+        color: white;
+        transform: translateX(4px);
+    }
+
+    .status-filter-tag {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--accent);
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .status-filter-tag .close-btn {
+        background: none;
+        border: none;
+        color: inherit;
+        cursor: pointer;
+        padding: 0;
+        font-size: 1.2rem;
+        line-height: 1;
+    }
+
+    .modern-search {
+        position: relative;
+        min-width: 250px;
+    }
+
+    .search-input-modern {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 3rem;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--secondary);
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+    }
+
+    .search-input-modern:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    .search-icon-modern {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-secondary);
+    }
+
+    /* Action buttons */
+    .btn-success-modern {
+        background: var(--accent);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-success-modern:hover {
+        background: #059669;
+        transform: translateY(-2px);
+        box-shadow: var(--shadow);
+        color: white;
+    }
+
+    /* Table improvements */
+    .modern-table th {
+        position: relative;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .modern-table th:hover {
+        background: #f1f5f9;
+    }
+
+    .sort-icon {
+        margin-left: 0.5rem;
+        color: var(--text-secondary);
+        transition: color 0.2s ease;
+    }
+
+    .modern-table th:hover .sort-icon {
+        color: var(--primary);
+    }
+
+    .table-checkbox {
+        width: 18px;
+        height: 18px;
+        border: 2px solid var(--border);
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .table-checkbox:checked {
+        background: var(--primary);
+        border-color: var(--primary);
+    }
+
+    .amount-cell {
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .action-dropdown {
+        position: relative;
+    }
+
+    .action-btn {
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+    }
+
+    .action-btn:hover {
+        background: var(--primary-dark);
+    }
+
+    /* Pagination */
+    .pagination-section {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        padding: 1.5rem 2rem;
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+        margin-top: 2rem;
+    }
+
+    .pagination-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .rows-selector {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .rows-select {
+        padding: 0.5rem;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: white;
+        font-size: 0.9rem;
+    }
+
+    .page-info {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    .pagination-nav {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .page-btn {
+        width: 40px;
+        height: 40px;
+        border: 1px solid var(--border);
+        background: white;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        color: var(--text-secondary);
+    }
+
+    .page-btn:hover:not(:disabled) {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
+
+    .page-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .filter-row {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .filter-left,
+        .filter-right {
+            justify-content: center;
+        }
+
+        .modern-search {
+            min-width: 100%;
+        }
+
+        .pagination-row {
+            flex-direction: column;
+            text-align: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1 class="page-title">Invoices</h1>
+        <nav class="breadcrumb-modern">
+            <a href="#"><i class="fas fa-home"></i></a>
+            <span>/</span>
+            <span>Invoices</span>
+        </nav>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="filter-section">
+        <div class="filter-row">
+            <div class="filter-left">
+                <!-- Actions Dropdown -->
+                <div class="modern-dropdown">
+                    <button class="dropdown-toggle" onclick="toggleDropdown('actionsDropdown')">
+                        <i class="fas fa-cog"></i>
+                        Actions
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="dropdown-menu-modern" id="actionsDropdown">
+                        <a href="#" class="dropdown-item-modern">
+                            <i class="fas fa-building"></i>
+                            Add Society
+                        </a>
+                        <a href="#" class="dropdown-item-modern">
+                            <i class="fas fa-envelope"></i>
+                            Send Email
+                        </a>
+                        <a href="#" class="dropdown-item-modern">
+                            <i class="fas fa-trash"></i>
+                            Delete
+                        </a>
+                        <a href="#" class="dropdown-item-modern">
+                            <i class="fas fa-ban"></i>
+                            Deactivate
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Status Filter -->
+                <div class="status-filter-tag">
+                    Active
+                    <button class="close-btn" onclick="this.parentElement.remove()">&times;</button>
+                </div>
+
+                <!-- Search -->
+                <div class="modern-search">
+                    <i class="fas fa-search search-icon-modern"></i>
+                    <input type="text" class="search-input-modern" placeholder="Search invoices...">
+                </div>
+            </div>
+
+            <div class="filter-right">
+                <button class="btn-success-modern">
+                    <i class="fas fa-upload"></i>
+                    Import
+                </button>
+                <a href="{{ url_for('create_invoice_form') }}" class="btn-modern btn-primary">
+                    <i class="fas fa-plus"></i>
+                    New Invoice
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table Section -->
+    <div class="data-table">
+        <div class="table-header">
+            <h3 class="table-title">All Invoices</h3>
+        </div>
+        
+        <table class="modern-table">
+            <thead>
+                <tr>
+                    <th width="50">
+                        <input type="checkbox" class="table-checkbox" id="selectAll">
+                    </th>
+                    <th>
+                        Invoice #
+                        <i class="fas fa-sort sort-icon"></i>
+                    </th>
+                    <th>
+                        Customer Name
+                        <i class="fas fa-sort sort-icon"></i>
+                    </th>
+                    <th>
+                        Invoice Date
+                        <i class="fas fa-sort sort-icon"></i>
+                    </th>
+                    <th>
+                        Payment Method
+                        <i class="fas fa-sort sort-icon"></i>
+                    </th>
+                    <th>
+                        Due Date
+                        <i class="fas fa-sort sort-icon"></i>
+                    </th>
+                    <th>
+                        Amount
+                        <i class="fas fa-sort sort-icon"></i>
+                    </th>
+                    <th>
+                        Notes
+                        <i class="fas fa-sort sort-icon"></i>
+                    </th>
+                    <th width="120">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for invoice in invoices %}
+                <tr>
+                    <td>
+                        <input type="checkbox" class="table-checkbox">
+                    </td>
+                    <td class="amount-cell">#{{ invoice.id }}</td>
+                    <td>{{ invoice.client.name }}</td>
+                    <td>{{ invoice.creation_date }}</td>
+                    <td>
+                        <span class="status-badge status-active">
+                            {{ invoice.payment_method.value }}
+                        </span>
+                    </td>
+                    <td>{{ invoice.due_date }}</td>
+                    <td class="amount-cell">${{ "%.2f"|format(invoice.items_total) }}</td>
+                    <td>{{ invoice.description[:30] }}{% if invoice.description|length > 30 %}...{% endif %}</td>
+                    <td>
+                        <div class="action-dropdown">
+                            <button class="action-btn" onclick="toggleDropdown('actionDropdown{{ invoice.id }}')">
+                                Actions
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="dropdown-menu-modern" id="actionDropdown{{ invoice.id }}">
+                                <a href="{{ url_for('edit_invoice_form', invoice_id=invoice.id) }}" class="dropdown-item-modern">
+                                    <i class="fas fa-edit"></i>
+                                    Edit Invoice
+                                </a>
+                                <a href="{{ url_for('getReportForm', invoice_id=invoice.id) }}" class="dropdown-item-modern">
+                                    <i class="fas fa-eye"></i>
+                                    View Invoice
+                                </a>
+                                <a href="{{ url_for('generate_pdf', invoice_id=invoice.id) }}" class="dropdown-item-modern">
+                                    <i class="fas fa-file-pdf"></i>
+                                    Download PDF
+                                </a>
+                                <a href="#" class="dropdown-item-modern" onclick="deleteInvoice('{{ invoice.id }}')">
+                                    <i class="fas fa-trash"></i>
+                                    Delete
+                                </a>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination Section -->
+    <div class="pagination-section">
+        <div class="pagination-row">
+            <div class="rows-selector">
+                <select class="rows-select">
+                    <option>10</option>
+                    <option>25</option>
+                    <option>50</option>
+                    <option>100</option>
+                </select>
+                <span class="text-muted">rows per page</span>
+            </div>
+            
+            <div class="page-info">
+                Page 1 of 1 • Total results: {{ invoices|length }}
+            </div>
+            
+            <div class="pagination-nav">
+                <button class="page-btn" title="First Page" disabled>
+                    <i class="fas fa-angle-double-left"></i>
+                </button>
+                <button class="page-btn" title="Previous Page" disabled>
+                    <i class="fas fa-angle-left"></i>
+                </button>
+                <button class="page-btn" title="Next Page" disabled>
+                    <i class="fas fa-angle-right"></i>
+                </button>
+                <button class="page-btn" title="Last Page" disabled>
+                    <i class="fas fa-angle-double-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialize AOS animations
+    AOS.init({
+        duration: 600,
+        easing: 'ease-in-out',
+        once: true
+    });
+
+    // Dropdown functionality
+    function toggleDropdown(dropdownId) {
+        const dropdown = document.getElementById(dropdownId);
+        const isOpen = dropdown.classList.contains('show');
+        
+        // Close all dropdowns
+        document.querySelectorAll('.dropdown-menu-modern').forEach(menu => {
+            menu.classList.remove('show');
+        });
+        
+        // Toggle current dropdown
+        if (!isOpen) {
+            dropdown.classList.add('show');
+        }
+    }
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(event) {
+        if (!event.target.closest('.modern-dropdown') && !event.target.closest('.action-dropdown')) {
+            document.querySelectorAll('.dropdown-menu-modern').forEach(menu => {
+                menu.classList.remove('show');
+            });
+        }
+    });
+
+    // Select all checkbox functionality
+    document.getElementById('selectAll').addEventListener('change', function() {
+        const checkboxes = document.querySelectorAll('.table-checkbox:not(#selectAll)');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
+    });
+
+    // Delete invoice function with modern SweetAlert
+    function deleteInvoice(invoiceId) {
+        Swal.fire({
+            title: 'Delete Invoice?',
+            text: "This action cannot be undone!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'Cancel',
+            customClass: {
+                popup: 'rounded-lg',
+                confirmButton: 'rounded-lg',
+                cancelButton: 'rounded-lg'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/invoices/delete/${invoiceId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: 'Deleted!',
+                            text: 'Invoice has been deleted successfully.',
+                            icon: 'success',
+                            confirmButtonColor: '#10b981',
+                            customClass: {
+                                popup: 'rounded-lg',
+                                confirmButton: 'rounded-lg'
+                            }
+                        }).then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        throw new Error(data.message || 'Failed to delete invoice');
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: error.message || 'Something went wrong!',
+                        icon: 'error',
+                        confirmButtonColor: '#ef4444',
+                        customClass: {
+                            popup: 'rounded-lg',
+                            confirmButton: 'rounded-lg'
+                        }
+                    });
+                });
+            }
+        });
+    }
+
+    // Search functionality
+    document.querySelector('.search-input-modern').addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        const tableRows = document.querySelectorAll('.modern-table tbody tr');
+        
+        tableRows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            if (text.includes(searchTerm)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+
+    // Toast notifications for actions
+    function showToast(message, type = 'success') {
+        Toastify({
+            text: message,
+            duration: 3000,
+            gravity: "top",
+            position: "right",
+            className: type,
+            style: {
+                background: type === 'success' ? 'var(--accent)' : 'var(--danger)',
+                borderRadius: '12px',
+                padding: '1rem 1.5rem',
+                fontWeight: '500'
+            }
+        }).showToast();
+    }
+</script>
+{% endblock %}

@@ -1,9 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, Form
-from fastapi.responses import RedirectResponse, HTMLResponse
-from sqlalchemy.orm import Session
+from fastapi.responses import RedirectResponse, HTMLResponse, JSONResponse
+from sqlalchemy import or_, String, cast
+from sqlalchemy.orm import Session, joinedload
 from typing import List,Optional
 from datetime import date
 from src.core.shared import templates
+from src.CSRF.csrf_service import CsrfService
 
 from src.database import get_db
 from src.api.models.client import Clients
@@ -49,14 +51,98 @@ async def create_invoice_form(request: Request, db: Session = Depends(get_db), u
     "enterprise_profile": enterprise_profile, "customer_data": customer_data, "product_data": product_data, "enterprise_data": enterprise_data, "current_page": "create_invoices","user": user, "mode": "create", "rowCounter": 1,"today": local_time}) # Add rowCounter to the context
 
 # to show invoices
-@invoice_router.get("/read", response_class=HTMLResponse, name="read_invoices")
-def read_invoices(request: Request, db: Session = Depends(get_db), user: dict = Depends(require_user_type(UserType.ENTERPRISE)), enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile)):
-    # Check authorization
-    auth_check = check_authorization(user, redirect=True)
-    if auth_check:
-        return auth_check
-    invoices = crud_invoice.get_invoices(db,enterprise_profile)
-    return templates.TemplateResponse("pages/invoices.html", {"request": request, "invoices": invoices, "current_page": "read_invoices","user": user})
+@invoice_router.get("/", response_class=HTMLResponse, name="read_invoices")
+async def read_invoices(
+    request: Request,
+    db: Session = Depends(get_db),
+    user: dict = Depends(require_user_type(UserType.ENTERPRISE)),
+    enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile),
+    page: int = 1,
+    per_page: int = 10,
+    search: str = None,
+    sort: str = "id",
+    order: str = "desc"
+):
+    try:
+        # Ensure valid pagination parameters
+        page = max(1, page)
+        per_page = min(max(10, per_page), 100)
+        skip = (page - 1) * per_page
+
+        # Base query with joins
+        query = (db.query(Invoice)
+                .options(joinedload(Invoice.client))
+                .options(joinedload(Invoice.enterprises))
+                .options(joinedload(Invoice.invoice_items))
+                .filter(Invoice.enterprise_profile_id == enterprise_profile.id))
+
+        # Apply search if provided
+        if search:
+            search_term = f"%{search}%"
+            query = query.join(Invoice.client).filter(
+                or_(
+                    Invoice.id.cast(String).ilike(search_term),
+                    Invoice.special_invoice_no.ilike(search_term),
+                    Invoice.client.has(Client.name.ilike(search_term)),
+                    Invoice.payment_method.ilike(search_term)
+                )
+            )
+
+        # Get total count for pagination
+        total_items = query.count()
+        total_pages = max(1, (total_items + per_page - 1) // per_page)
+
+        # Apply sorting
+        if sort == "invoice_number":
+            query = query.order_by(Invoice.special_invoice_no.desc() if order == "desc" else Invoice.special_invoice_no.asc())
+        elif sort == "customer_name":
+            query = query.join(Invoice.client).order_by(Client.name.desc() if order == "desc" else Client.name.asc())
+        elif sort == "amount":
+            query = query.order_by(Invoice.items_total.desc() if order == "desc" else Invoice.items_total.asc())
+        else:
+            query = query.order_by(Invoice.id.desc() if order == "desc" else Invoice.id.asc())
+
+        # Apply pagination
+        invoices = query.offset(skip).limit(per_page).all()
+
+        response = templates.TemplateResponse(
+            "pages/invoices.html",
+            {
+                "request": request,
+                "invoices": invoices,
+                "current_page": "view_invoices",
+                "page_number": page,
+                "total_pages": total_pages,
+                "per_page": per_page,
+                "total_items": total_items,
+                "search": search,
+                "sort": sort,
+                "order": order,
+                "user": user,
+                "enterprise_id": enterprise_profile.id
+            }
+        )
+        # Generate CSRF token
+        try:
+            csrf_token = CsrfService.generate_csrf_token_for_form(response)
+            response.context["csrf_token"] = csrf_token
+        except Exception as csrf_error:
+            print(f"CSRF Error: {csrf_error}")
+            pass
+        return response
+
+    except Exception as e:
+        print(f"Error fetching invoices: {e}")
+        return templates.TemplateResponse(
+            "pages/error.html",
+            {
+                "request": request,
+                "error_message": f"Error loading invoices: {str(e)}",
+                "current_page": "error",
+                "user": user
+            },
+            status_code=500
+        )
 
 # to edit the invocies form
 @invoice_router.get("/edit/{invoice_id}", response_class=HTMLResponse, name="edit_invoice_form")

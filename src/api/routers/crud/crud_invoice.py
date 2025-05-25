@@ -8,7 +8,7 @@ from src.api.models.public.user import EnterpriseProfile
 def get_invoice(db: Session, invoice_id: int):
     return db.query(Invoice).filter(Invoice.id == invoice_id).first()
 
-def get_invoices(db: Session,enterprise_profile: EnterpriseProfile, skip: int = 0, limit: int = 100):
+""" def get_invoices(db: Session,enterprise_profile: EnterpriseProfile, skip: int = 0, limit: int = 100):
     # return db.query(Invoice).offset(skip).limit(limit).all()
     return (db.query(Invoice)
             .options(joinedload(Invoice.client))  # Load the client relationship
@@ -18,7 +18,7 @@ def get_invoices(db: Session,enterprise_profile: EnterpriseProfile, skip: int = 
             .order_by(Invoice.id.desc())
             .offset(skip)
             .limit(limit)
-            .all())
+            .all()) """
 
 def create_invoice(db: Session, db_invoice: InvoiceCreate, enterprise_profile: EnterpriseProfile):
     # Extract invoice data without items
