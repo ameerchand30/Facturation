@@ -1,0 +1,818 @@
+{% extends "layout/base.html" %}
+
+{% block title %}{{ "Update Product" if product else "Add Product" }} - Chand Invoices{% endblock %}
+
+{% block page_css %}
+<style>
+    /* Add Product Page Specific Styles */
+    .page-header {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--gradient);
+    }
+
+    .page-header h1 {
+        color: var(--text-primary);
+        font-weight: 700;
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .page-header p {
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+        margin: 0;
+    }
+
+    .breadcrumb {
+        background: none;
+        padding: 0;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .breadcrumb a {
+        color: var(--text-secondary);
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .breadcrumb a:hover {
+        color: var(--primary);
+    }
+
+    .breadcrumb .active {
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+
+    .form-container {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+
+    .form-header {
+        padding: 2rem 2rem 0 2rem;
+        border-bottom: 1px solid var(--border);
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        position: relative;
+    }
+
+    .form-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--gradient);
+    }
+
+    .form-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .form-subtitle {
+        color: var(--text-secondary);
+        margin-bottom: 2rem;
+    }
+
+    .form-body {
+        padding: 2rem;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .form-row.two-cols {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .form-group {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.75rem;
+        font-size: 0.95rem;
+        letter-spacing: 0.025em;
+    }
+
+    .form-group label.required::after {
+        content: '*';
+        color: var(--danger);
+        margin-left: 0.25rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 1rem 1.25rem;
+        border: 2px solid var(--border);
+        border-radius: 16px;
+        background: var(--secondary);
+        font-size: 1rem;
+        color: var(--text-primary);
+        transition: all 0.3s ease;
+        font-family: inherit;
+        resize: vertical;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        background: white;
+        transform: translateY(-1px);
+    }
+
+    .form-control:hover:not(:focus) {
+        border-color: var(--primary);
+        background: rgba(255, 255, 255, 0.8);
+    }
+
+    .form-control.error {
+        border-color: var(--danger);
+        background: rgba(239, 68, 68, 0.05);
+    }
+
+    .form-control.error:focus {
+        box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+    }
+
+    textarea.form-control {
+        min-height: 120px;
+        font-family: inherit;
+        line-height: 1.6;
+    }
+
+    .input-icon {
+        position: absolute;
+        right: 1.25rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-secondary);
+        transition: all 0.2s ease;
+        pointer-events: none;
+    }
+
+    .form-control:focus ~ .input-icon {
+        color: var(--primary);
+    }
+
+    .form-actions {
+        background: rgba(248, 250, 252, 0.8);
+        padding: 2rem;
+        border-top: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .btn-modern {
+        padding: 1rem 2rem;
+        border: none;
+        border-radius: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        text-decoration: none;
+        font-size: 1rem;
+        box-shadow: var(--shadow);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-modern::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+        transition: left 0.5s;
+    }
+
+    .btn-modern:hover::before {
+        left: 100%;
+    }
+
+    .btn-primary {
+        background: var(--gradient);
+        color: white;
+        border: 2px solid transparent;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+        color: white;
+    }
+
+    .btn-primary:active {
+        transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+        background: white;
+        color: var(--text-primary);
+        border: 2px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+        background: var(--light);
+        border-color: var(--primary);
+        color: var(--primary);
+        transform: translateY(-2px);
+    }
+
+    .btn-modern:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none !important;
+    }
+
+    .btn-modern.loading {
+        pointer-events: none;
+        opacity: 0.8;
+    }
+
+    .btn-modern.loading::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 20px;
+        height: 20px;
+        margin: -10px 0 0 -10px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-top: 2px solid white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    .error-message {
+        color: var(--danger);
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        opacity: 0;
+        transform: translateY(-10px);
+        transition: all 0.3s ease;
+    }
+
+    .error-message.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .success-message {
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        color: var(--accent);
+        padding: 1rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-weight: 500;
+    }
+
+    .form-help {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .form-row.two-cols {
+            grid-template-columns: 1fr;
+        }
+
+        .form-actions {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .btn-group {
+            justify-content: center;
+        }
+
+        .page-header,
+        .form-container {
+            margin-left: -1rem;
+            margin-right: -1rem;
+            border-radius: 0;
+        }
+
+        .form-body,
+        .form-header,
+        .form-actions {
+            padding: 1.5rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .btn-modern {
+            padding: 0.875rem 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .form-control {
+            padding: 0.875rem 1rem;
+        }
+    }
+
+    /* Animation Classes */
+    .fade-in {
+        animation: fadeIn 0.6s ease;
+    }
+
+    @keyframes fadeIn {
+        from { 
+            opacity: 0; 
+            transform: translateY(20px); 
+        }
+        to { 
+            opacity: 1; 
+            transform: translateY(0); 
+        }
+    }
+
+    .slide-up {
+        animation: slideUp 0.6s ease;
+    }
+
+    @keyframes slideUp {
+        from { 
+            opacity: 0; 
+            transform: translateY(30px); 
+        }
+        to { 
+            opacity: 1; 
+            transform: translateY(0); 
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="fade-in">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token if csrf_token else '' }}">
+        
+        <!-- Page Header -->
+        <div class="page-header">
+            <!-- Breadcrumb -->
+            <nav class="breadcrumb">
+               
+                <span>/</span>
+                <a href="{{ url_for('read_products') }}">Products</a>
+                <span>/</span>
+                <span class="active">{{ "Update Product" if product else "Add Product" }}</span>
+            </nav>
+            
+            <h1>
+                <i class="fas fa-{{ 'edit' if product else 'plus-circle' }}"></i>
+                {{ "Update Product" if product else "Add Product" }}
+            </h1>
+            <p>{{ "Modify product details and pricing" if product else "Create a new product for your inventory" }}</p>
+        </div>
+
+        <!-- Product Form -->
+        <div class="form-container slide-up">
+            <form id="productForm" action="{{ url_for('create_product') if not product else url_for('update_product', product_id=product.id) }}" method="post">
+                <!-- Form Header -->
+                <div class="form-header">
+                    <h2 class="form-title">
+                        <i class="fas fa-box-open"></i>
+                        Product Information
+                    </h2>
+                    <p class="form-subtitle">Fill in the product details below. Fields marked with * are required.</p>
+                </div>
+
+                <!-- Form Body -->
+                <div class="form-body">
+                    <!-- Success Message (hidden by default) -->
+                    <div id="successMessage" class="success-message" style="display: none;">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Product saved successfully!</span>
+                    </div>
+
+                    <!-- First Row - Name and Reference -->
+                    <div class="form-row two-cols">
+                        <div class="form-group">
+                            <label for="product_name" class="required">Product Name</label>
+                            <div style="position: relative;">
+                                <input type="text" 
+                                       id="product_name" 
+                                       name="name" 
+                                       class="form-control" 
+                                       value="{{ product.name if product else '' }}" 
+                                       placeholder="Enter product name"
+                                       required>
+                                <i class="fas fa-tag input-icon"></i>
+                            </div>
+                            <div class="error-message" id="nameError">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <span></span>
+                            </div>
+                            <div class="form-help">
+                                <i class="fas fa-info-circle"></i>
+                                Choose a clear, descriptive name for your product
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="ref_number">Reference Number</label>
+                            <div style="position: relative;">
+                                <input type="text" 
+                                       id="ref_number" 
+                                       name="ref_number" 
+                                       class="form-control" 
+                                       value="{{ product.ref_number if product else '' }}" 
+                                       placeholder="Enter reference number">
+                                <i class="fas fa-hashtag input-icon"></i>
+                            </div>
+                            <div class="error-message" id="refError">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <span></span>
+                            </div>
+                            <div class="form-help">
+                                <i class="fas fa-info-circle"></i>
+                                Optional SKU or internal reference code
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Second Row - Price -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="price" class="required">Price</label>
+                            <div style="position: relative;">
+                                <input type="number" 
+                                       id="price" 
+                                       name="price" 
+                                       class="form-control" 
+                                       value="{{ product.price if product else '' }}" 
+                                       placeholder="0.00"
+                                       step="0.01"
+                                       min="0"
+                                       required>
+                                <i class="fas fa-dollar-sign input-icon"></i>
+                            </div>
+                            <div class="error-message" id="priceError">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <span></span>
+                            </div>
+                            <div class="form-help">
+                                <i class="fas fa-info-circle"></i>
+                                Enter the product price in USD
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Third Row - Description -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            <textarea id="description" 
+                                      name="description" 
+                                      class="form-control" 
+                                      placeholder="Enter product description, features, or notes..."
+                                      rows="4">{{ product.description if product else '' }}</textarea>
+                            <div class="error-message" id="descriptionError">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <span></span>
+                            </div>
+                            <div class="form-help">
+                                <i class="fas fa-info-circle"></i>
+                                Provide additional details about the product (optional)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <div class="btn-group">
+                        <a href="{{ url_for('read_products') }}" class="btn-modern btn-secondary">
+                            <i class="fas fa-times"></i>
+                            Cancel
+                        </a>
+                    </div>
+                    
+                    <div class="btn-group">
+                        <button type="button" id="btnReset" class="btn-modern btn-secondary">
+                            <i class="fas fa-undo"></i>
+                            Reset
+                        </button>
+                        <button type="submit" id="btnSubmit" class="btn-modern btn-primary">
+                            <i class="fas fa-{{ 'save' if product else 'plus' }}"></i>
+                            {{ "Update Product" if product else "Add Product" }}
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialize form validation and submission
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('productForm');
+        const submitBtn = document.getElementById('btnSubmit');
+        const resetBtn = document.getElementById('btnReset');
+        const successMessage = document.getElementById('successMessage');
+
+        // Form validation rules
+        const validationRules = {
+            name: {
+                required: true,
+                minLength: 2,
+                maxLength: 100
+            },
+            ref_number: {
+                maxLength: 50
+            },
+            price: {
+                required: true,
+                min: 0,
+                type: 'number'
+            },
+            description: {
+                maxLength: 500
+            }
+        };
+
+        // Real-time validation
+        function validateField(fieldName, value) {
+            const rules = validationRules[fieldName];
+            const errors = [];
+
+            if (rules.required && (!value || value.trim() === '')) {
+                errors.push('This field is required');
+            }
+
+            if (value && rules.minLength && value.trim().length < rules.minLength) {
+                errors.push(`Minimum ${rules.minLength} characters required`);
+            }
+
+            if (value && rules.maxLength && value.trim().length > rules.maxLength) {
+                errors.push(`Maximum ${rules.maxLength} characters allowed`);
+            }
+
+            if (rules.type === 'number' && value && (isNaN(value) || parseFloat(value) < (rules.min || 0))) {
+                errors.push('Please enter a valid positive number');
+            }
+
+            return errors;
+        }
+
+        // Show field error
+        function showFieldError(fieldName, errors) {
+            const field = document.getElementById(fieldName === 'name' ? 'product_name' : fieldName);
+            const errorElement = document.getElementById(fieldName + 'Error');
+            
+            if (errors.length > 0) {
+                field.classList.add('error');
+                errorElement.querySelector('span').textContent = errors[0];
+                errorElement.classList.add('show');
+            } else {
+                field.classList.remove('error');
+                errorElement.classList.remove('show');
+            }
+        }
+
+        // Add real-time validation to form fields
+        Object.keys(validationRules).forEach(fieldName => {
+            const field = document.getElementById(fieldName === 'name' ? 'product_name' : fieldName);
+            if (field) {
+                field.addEventListener('blur', function() {
+                    const errors = validateField(fieldName, this.value);
+                    showFieldError(fieldName, errors);
+                });
+
+                field.addEventListener('input', function() {
+                    // Clear errors on input
+                    if (field.classList.contains('error')) {
+                        const errors = validateField(fieldName, this.value);
+                        if (errors.length === 0) {
+                            showFieldError(fieldName, []);
+                        }
+                    }
+                });
+            }
+        });
+
+        // Form submission with enhanced UX
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Validate all fields
+            let hasErrors = false;
+            const formData = new FormData(form);
+            const jsonData = {};
+
+            for (let [key, value] of formData.entries()) {
+                jsonData[key] = value;
+                const errors = validateField(key, value);
+                if (errors.length > 0) {
+                    showFieldError(key, errors);
+                    hasErrors = true;
+                }
+            }
+
+            if (hasErrors) {
+                showToast('Please fix the errors before submitting', 'error');
+                return;
+            }
+
+            // Show loading state
+            submitBtn.classList.add('loading');
+            submitBtn.disabled = true;
+
+            // Submit form
+            fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('input[name="csrf_token"]')?.value || ''
+                },
+                body: JSON.stringify(jsonData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    successMessage.style.display = 'flex';
+                    successMessage.scrollIntoView({ behavior: 'smooth' });
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: data.message,
+                        confirmButtonColor: '#10b981',
+                        confirmButtonText: 'Go to Products'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = '{{ url_for("read_products") }}';
+                        }
+                    });
+
+                    // Reset form if it's add mode
+                    // {% if not product %}
+                    // form.reset();
+                    // {% endif %}
+                } else {
+                    throw new Error(data.message || 'Failed to save product');
+                }
+            })
+            .catch(error => {
+                console.error('Form submission error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: error.message || 'Something went wrong while saving the product.',
+                    confirmButtonColor: '#ef4444'
+                });
+            })
+            .finally(() => {
+                // Reset button state
+                submitBtn.classList.remove('loading');
+                submitBtn.disabled = false;
+            });
+        });
+
+        // Reset button functionality
+        resetBtn.addEventListener('click', function() {
+            Swal.fire({
+                title: 'Reset Form?',
+                text: 'This will clear all entered data. Are you sure?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#6b7280',
+                cancelButtonColor: '#ef4444',
+                confirmButtonText: 'Yes, Reset',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.reset();
+                    // Clear all error states
+                    document.querySelectorAll('.form-control.error').forEach(field => {
+                        field.classList.remove('error');
+                    });
+                    document.querySelectorAll('.error-message.show').forEach(error => {
+                        error.classList.remove('show');
+                    });
+                    successMessage.style.display = 'none';
+                    showToast('Form has been reset', 'info');
+                }
+            });
+        });
+
+        // Toast notification function
+        function showToast(message, type = 'info') {
+            const colors = {
+                success: '#10b981',
+                error: '#ef4444',
+                info: '#6366f1',
+                warning: '#f59e0b'
+            };
+
+            Toastify({
+                text: message,
+                duration: 3000,
+                gravity: "top",
+                position: "right",
+                backgroundColor: colors[type] || colors.info,
+                className: "modern-toast",
+                stopOnFocus: true
+            }).showToast();
+        }
+
+        // Enhanced keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + S to save
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                form.dispatchEvent(new Event('submit'));
+            }
+            
+            // Escape to cancel
+            if (e.key === 'Escape') {
+                window.location.href = '{{ url_for("read_products") }}';
+            }
+        });
+
+        // Auto-focus first field
+        document.getElementById('product_name').focus();
+    });
+</script>
+{% endblock %}
