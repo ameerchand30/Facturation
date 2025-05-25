@@ -56,9 +56,13 @@ app.add_middleware(
 app.add_middleware(SessionMiddleware, secret_key="your-secret-key")
 
 
+@app.get("/")
+async def root(request: Request):
+    return templates.TemplateResponse("pages/dashboard.html", {"request": request})
+
 # Include routers
 # app.include_router(auth)
-app.include_router(auth_router)
+""" app.include_router(auth_router)
 app.include_router(client_router)
 app.include_router(product_router)
 app.include_router(enterprise_router)
@@ -74,7 +78,7 @@ async def root(request: Request):
 
 @app.get("/{full_path:path}")  
 async def catch_all(request: Request, full_path: str):
-    return templates.TemplateResponse("pages/User/LandingPage/landing-page.html", {"request": request})
+    return templates.TemplateResponse("pages/User/LandingPage/landing-page.html", {"request": request}) """
 
 if __name__ == "__main__":
     import uvicorn
