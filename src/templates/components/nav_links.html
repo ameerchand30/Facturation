@@ -12,7 +12,7 @@
                 </a>
             </div>
             <div class="nav-item">
-                <a href="#" class="nav-link">
+                <a href="{{ url_for('read_products') }}" class="nav-link {% if request.url.path.startswith('/products') %}active{% endif %}">
                     <i class="nav-icon fas fa-box"></i>
                     <span class="nav-text">Products</span>
                 </a>

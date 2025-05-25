@@ -73,7 +73,7 @@ async def read_products(
             .all()
 
         return templates.TemplateResponse(
-            "pages/product.html",
+            "pages/products.html",
             {
                 "request": request,
                 "products": products,

@@ -59,6 +59,7 @@ app.add_middleware(SessionMiddleware, secret_key="your-secret-key")
 @app.get("/")
 async def root(request: Request):
     return templates.TemplateResponse("pages/dashboard.html", {"request": request})
+app.include_router(product_router)
 
 # Include routers
 # app.include_router(auth)
