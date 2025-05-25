@@ -1,0 +1,1099 @@
+{% extends "layout/base.html" %}
+
+{% block title %}Clients - Chand Invoices{% endblock %}
+{% block page_css %}
+<style>
+    /* Modern Clients Page Styles */
+    .page-header {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--gradient);
+    }
+
+    .page-header h1 {
+        color: var(--text-primary);
+        font-weight: 700;
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+        margin: 0;
+    }
+
+    .filter-section {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow);
+    }
+
+    .filter-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .search-group {
+        flex: 1;
+        max-width: 400px;
+    }
+
+    .modern-search {
+        position: relative;
+        width: 100%;
+    }
+
+    .modern-search input {
+        width: 100%;
+        padding: 1rem 1rem 1rem 3.5rem;
+        border: 2px solid var(--border);
+        border-radius: 16px;
+        background: var(--secondary);
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        color: var(--text-primary);
+    }
+
+    .modern-search input:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        background: white;
+    }
+
+    .modern-search .search-icon {
+        position: absolute;
+        left: 1.25rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+    }
+
+    .modern-search input:focus + .search-icon {
+        color: var(--primary);
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .btn-add {
+        background: var(--gradient);
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        text-decoration: none;
+        font-size: 1rem;
+        box-shadow: var(--shadow);
+    }
+
+    .btn-add:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+        color: white;
+    }
+
+    .btn-secondary {
+        background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        text-decoration: none;
+        font-size: 1rem;
+        box-shadow: var(--shadow);
+    }
+
+    .btn-secondary:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+        color: white;
+    }
+
+    .table-container {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .clients-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0;
+    }
+
+    .clients-table thead {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    }
+
+    .clients-table th {
+        padding: 1.5rem 1.5rem;
+        text-align: left;
+        font-weight: 600;
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: 2px solid var(--border);
+        position: relative;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .clients-table th:hover {
+        background: rgba(99, 102, 241, 0.05);
+    }
+
+    .clients-table th i {
+        margin-left: 0.5rem;
+        opacity: 0.6;
+        transition: all 0.2s ease;
+    }
+
+    .clients-table th:hover i {
+        opacity: 1;
+        color: var(--primary);
+    }
+
+    .clients-table td {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--border);
+        color: var(--text-primary);
+        vertical-align: middle;
+    }
+
+    .clients-table tbody tr {
+        transition: all 0.2s ease;
+    }
+
+    .clients-table tbody tr:hover {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.03) 100%);
+        transform: scale(1.005);
+    }
+
+    .checkbox-wrapper {
+        position: relative;
+        display: inline-block;
+    }
+
+    .checkbox-wrapper input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        border: 2px solid var(--border);
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: white;
+    }
+
+    .checkbox-wrapper input[type="checkbox"]:checked {
+        background: var(--primary);
+        border-color: var(--primary);
+    }
+
+    .client-name {
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .client-email {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    .id-number {
+        font-family: 'Monaco', 'Menlo', monospace;
+        background: var(--light);
+        padding: 0.25rem 0.5rem;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+    }
+
+    .client-balance {
+        font-weight: 700;
+        font-size: 1.125rem;
+        color: var(--accent);
+    }
+
+    .client-balance.positive {
+        color: #10b981;
+    }
+
+    .client-balance.negative {
+        color: #ef4444;
+    }
+
+    .client-address {
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--text-secondary);
+    }
+
+    .date-created {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+    }
+
+    .client-notes {
+        max-width: 150px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--text-secondary);
+        font-style: italic;
+    }
+
+    .action-btn {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 10px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        font-size: 0.875rem;
+        margin-right: 0.5rem;
+    }
+
+    .btn-edit {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+    }
+
+    .btn-edit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+        color: white;
+    }
+
+    .btn-delete {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+        box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+    }
+
+    .btn-delete:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+        color: white;
+    }
+
+    .bulk-actions {
+        background: rgba(99, 102, 241, 0.1);
+        backdrop-filter: blur(20px);
+        border-radius: 16px;
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        padding: 1rem 2rem;
+        margin-bottom: 1rem;
+        display: none;
+        align-items: center;
+        gap: 1rem;
+        animation: slideDown 0.3s ease;
+    }
+
+    .bulk-actions.show {
+        display: flex;
+    }
+
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .bulk-action-btn {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 10px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .bulk-edit {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+    }
+
+    .bulk-delete {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+    }
+
+    .bulk-email {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+    }
+
+    .pagination-section {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        padding: 1.5rem 2rem;
+        box-shadow: var(--shadow);
+    }
+
+    .pagination-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .rows-per-page {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .rows-per-page select {
+        padding: 0.75rem 1rem;
+        border: 2px solid var(--border);
+        border-radius: 12px;
+        background: var(--secondary);
+        color: var(--text-primary);
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .rows-per-page select:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    .page-info {
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+
+    .page-navigation {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .nav-btn {
+        padding: 0.75rem;
+        border: 2px solid var(--border);
+        border-radius: 12px;
+        background: white;
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+    }
+
+    .nav-btn:hover:not(:disabled) {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: var(--shadow);
+    }
+
+    .nav-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background: var(--light);
+    }
+
+    /* Loading States */
+    .loading {
+        opacity: 0.6;
+        pointer-events: none;
+        position: relative;
+    }
+
+    .loading::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 20px;
+        height: 20px;
+        margin: -10px 0 0 -10px;
+        border: 2px solid var(--primary);
+        border-top: 2px solid transparent;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .filter-controls {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .search-group {
+            max-width: none;
+        }
+
+        .action-buttons {
+            justify-content: center;
+        }
+
+        .pagination-controls {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .clients-table {
+            font-size: 0.875rem;
+        }
+
+        .clients-table th,
+        .clients-table td {
+            padding: 1rem 0.75rem;
+        }
+
+        .client-address,
+        .client-notes {
+            max-width: 120px;
+        }
+
+        .action-btn {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.8rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .page-header,
+        .filter-section,
+        .table-container,
+        .pagination-section {
+            margin-left: -1rem;
+            margin-right: -1rem;
+            border-radius: 0;
+        }
+
+        .action-btn {
+            margin-bottom: 0.25rem;
+        }
+    }
+
+    /* CSS Variables */
+    :root {
+        --primary: #6366f1;
+        --secondary: #f8fafc;
+        --accent: #8b5cf6;
+        --text-primary: #1f2937;
+        --text-secondary: #6b7280;
+        --border: #e5e7eb;
+        --light: #f3f4f6;
+        --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+        --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="fade-in">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token if csrf_token else '' }}">
+        
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1><i class="fas fa-users"></i> Clients</h1>
+            <p>Manage your client relationships and information</p>
+        </div>
+
+        <!-- Search and Filter Section -->
+        <div class="filter-section">
+            <div class="filter-controls">
+                <div class="search-group">
+                    <div class="modern-search">
+                        <input type="text" 
+                               id="searchInput" 
+                               placeholder="Search clients by name, email, or ID number..."
+                               value="{{ search.replace('%', '') if search else '' }}"
+                               oninput="debounceSearch(this.value)">
+                        <i class="fas fa-search search-icon"></i>
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn-secondary">
+                        <i class="fas fa-upload"></i>
+                        <span>Import</span>
+                    </button>
+                    <a href="{{ url_for('create_client') }}" class="btn-add">
+                        <i class="fas fa-plus"></i>
+                        <span>Add New Client</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bulk Actions (Hidden by default) -->
+        <div class="bulk-actions" id="bulkActions">
+            <span id="selectedCount">0 clients selected</span>
+            <button class="bulk-action-btn bulk-edit" onclick="handleBulkEdit()">
+                <i class="fas fa-edit"></i>
+                <span>Edit Selected</span>
+            </button>
+            <button class="bulk-action-btn bulk-delete" onclick="handleBulkDelete()">
+                <i class="fas fa-trash-alt"></i>
+                <span>Delete Selected</span>
+            </button>
+            <button class="bulk-action-btn bulk-email" onclick="handleBulkEmail()">
+                <i class="fas fa-envelope"></i>
+                <span>Send Email</span>
+            </button>
+        </div>
+
+        <!-- Clients Table -->
+        <div class="table-container">
+            <div class="table-responsive">
+                <table class="clients-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">
+                                <div class="checkbox-wrapper">
+                                    <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
+                                </div>
+                            </th>
+                            <th>Name <i class="fas fa-sort"></i></th>
+                            <th>Contact Email <i class="fas fa-sort"></i></th>
+                            <th>ID Number <i class="fas fa-sort"></i></th>
+                            <th>Balance <i class="fas fa-sort"></i></th>
+                            <th>Address <i class="fas fa-sort"></i></th>
+                            <th>Date Created <i class="fas fa-sort"></i></th>
+                            <th>Notes <i class="fas fa-sort"></i></th>
+                            <th style="width: 180px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="clientsTableBody">
+                        {% for client in clients %}
+                        <tr data-aos="fade-up" data-aos-delay="{{ loop.index0 * 50 }}">
+                            <td>
+                                <div class="checkbox-wrapper">
+                                    <input type="checkbox" class="client-checkbox" value="{{ client.id }}">
+                                </div>
+                            </td>
+                            <td>
+                                <div class="client-name">{{ client.name }}</div>
+                            </td>
+                            <td>
+                                <div class="client-email">{{ client.email }}</div>
+                            </td>
+                            <td>
+                                <span class="id-number">{{ client.idNumber if client.idNumber else 'N/A' }}</span>
+                            </td>
+                            <td>
+                                <div class="client-balance {{ 'positive' if client.balance and client.balance > 0 else 'negative' if client.balance and client.balance < 0 else '' }}">
+                                    ${{ "%.2f"|format(client.balance if client.balance else 0) }}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="client-address" title="{{ client.Billing_Street if client.Billing_Street else 'No address provided' }}">
+                                    {{ client.Billing_Street if client.Billing_Street else 'No address' }}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="date-created">{{ client.created_at.strftime('%Y-%m-%d') if client.created_at else 'N/A' }}</div>
+                            </td>
+                            <td>
+                                <div class="client-notes" title="{{ client.notes if client.notes else 'No notes' }}">
+                                    {{ client.notes if client.notes else 'No notes' }}
+                                </div>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('edit_client_form', client_id=client.id) }}" class="action-btn btn-edit">
+                                    <i class="fas fa-edit"></i>
+                                    <span>Edit</span>
+                                </a>
+                                <button onclick="deleteClient('{{ client.id }}'); return false;" 
+                                        class="action-btn btn-delete">
+                                    <i class="fas fa-trash-alt"></i>
+                                    <span>Delete</span>
+                                </button>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="9" style="text-align: center; padding: 3rem; color: var(--text-secondary);">
+                                <i class="fas fa-users" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+                                <div style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem;">No clients found</div>
+                                <div>Start by adding your first client</div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination Section -->
+        <div class="pagination-section">
+            <div class="pagination-controls">
+                <div class="rows-per-page">
+                    <label for="perPageSelect" style="color: var(--text-secondary); font-weight: 500;">Show:</label>
+                    <select id="perPageSelect" onchange="changePerPage()">
+                        <option value="10" {% if per_page == 10 %}selected{% endif %}>10</option>
+                        <option value="25" {% if per_page == 25 %}selected{% endif %}>25</option>
+                        <option value="50" {% if per_page == 50 %}selected{% endif %}>50</option>
+                        <option value="100" {% if per_page == 100 %}selected{% endif %}>100</option>
+                    </select>
+                    <span style="color: var(--text-secondary); font-weight: 500;">entries</span>
+                </div>
+                
+                <div class="page-info">
+                    Showing {{ ((page_number - 1) * per_page + 1) if clients else 0 }} to 
+                    {{ (page_number * per_page) if (page_number * per_page) < total_items else total_items }} 
+                    of {{ total_items }} results
+                </div>
+                
+                <div class="page-navigation">
+                    <button class="nav-btn" 
+                            title="First Page" 
+                            onclick="goToPage(1)"
+                            {% if page_number == 1 %}disabled{% endif %}>
+                        <i class="fas fa-angle-double-left"></i>
+                    </button>
+                    <button class="nav-btn" 
+                            title="Previous Page" 
+                            onclick="goToPage('{{ page_number - 1 }}')"
+                            {% if page_number == 1 %}disabled{% endif %}>
+                        <i class="fas fa-angle-left"></i>
+                    </button>
+                    <button class="nav-btn" 
+                            title="Next Page" 
+                            onclick="goToPage('{{ page_number + 1 }}')"
+                            {% if page_number == total_pages %}disabled{% endif %}>
+                        <i class="fas fa-angle-right"></i>
+                    </button>
+                    <button class="nav-btn" 
+                            title="Last Page" 
+                            onclick="goToPage('{{ total_pages }}')"
+                            {% if page_number == total_pages %}disabled{% endif %}>
+                        <i class="fas fa-angle-double-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.7.12/sweetalert2.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.12.0/toastify.min.js"></script>
+
+<script>
+    // Initialize AOS animations
+    AOS.init({
+        duration: 600,
+        easing: 'ease-in-out',
+        once: true
+    });
+
+    let selectedClients = new Set();
+
+    // Pagination function with loading state
+    function goToPage(page) {
+        const tableBody = document.getElementById('clientsTableBody');
+        tableBody.classList.add('loading');
+        
+        const searchParams = new URLSearchParams(window.location.search);
+        searchParams.set('page', page);
+        const currentSearch = searchParams.get('search');
+        if (currentSearch) {
+            searchParams.set('search', currentSearch);
+        }
+        window.location.href = `${window.location.pathname}?${searchParams.toString()}`;
+    }
+
+    // Rows per page function with loading state
+    function changePerPage() {
+        const perPage = document.getElementById('perPageSelect').value;
+        const tableBody = document.getElementById('clientsTableBody');
+        tableBody.classList.add('loading');
+        
+        const searchParams = new URLSearchParams(window.location.search);
+        const currentSearch = searchParams.get('search');
+        
+        searchParams.delete('page');
+        searchParams.delete('per_page');
+        searchParams.delete('search');
+        
+        searchParams.set('per_page', perPage);
+        searchParams.set('page', '1');
+        if (currentSearch) {
+            searchParams.set('search', currentSearch);
+        }
+        
+        window.location.href = `${window.location.pathname}?${searchParams.toString()}`;
+    }
+
+    // Enhanced debounce function
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    // Enhanced search function with better UX
+    function handleSearch(searchTerm) {
+        const tableBody = document.getElementById('clientsTableBody');
+        const searchInput = document.getElementById('searchInput');
+        
+        // Add loading state
+        tableBody.classList.add('loading');
+        searchInput.style.opacity = '0.7';
+        
+        const searchParams = new URLSearchParams(window.location.search);
+        if (searchTerm) {
+            searchParams.set('search', searchTerm);
+        } else {
+            searchParams.delete('search');
+        }
+        searchParams.set('page', 1);
+
+        fetch(`${window.location.pathname}?${searchParams.toString()}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json, text/html'
+            }
+        })
+        .then(response => response.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            
+            // Update table body with fade effect
+            const newTableBody = doc.querySelector('#clientsTableBody');
+            if (newTableBody) {
+                tableBody.style.opacity = '0';
+                setTimeout(() => {
+                    tableBody.innerHTML = newTableBody.innerHTML;
+                    tableBody.style.opacity = '1';
+                    tableBody.classList.remove('loading');
+                    
+                    // Re-attach event listeners
+                    attachCheckboxListeners();
+                }, 150);
+            }
+            
+            // Update pagination
+            const newPagination = doc.querySelector('.pagination-section');
+            if (newPagination) {
+                document.querySelector('.pagination-section').innerHTML = newPagination.innerHTML;
+            }
+            
+            // Update URL without page reload
+            window.history.pushState({}, '', `${window.location.pathname}?${searchParams.toString()}`);
+            
+            // Restore search input
+            searchInput.style.opacity = '1';
+            
+            // Show toast notification for search results
+            const resultsCount = doc.querySelectorAll('#clientsTableBody tr').length;
+            if (searchTerm && resultsCount === 0) {
+                showToast('No clients found matching your search', 'info');
+            } else if (searchTerm) {
+                showToast(`Found ${resultsCount} client${resultsCount !== 1 ? 's' : ''}`, 'success');
+            }
+        })
+        .catch(error => {
+            console.error('Search error:', error);
+            tableBody.classList.remove('loading');
+            searchInput.style.opacity = '1';
+            showToast('Search failed. Please try again.', 'error');
+        });
+    }
+
+    // Create debounced search function
+    const debounceSearch = debounce(handleSearch, 300);
+    // Attach checkbox listeners    
+    function attachCheckboxListeners() {
+        const checkboxes = document.querySelectorAll('.client-checkbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', handleCheckboxChange);
+        });
+    }
+    attachCheckboxListeners();
+    // Handle checkbox change
+    function handleCheckboxChange(event) {
+        const checkbox = event.target;
+        const clientId = checkbox.value;
+
+        if (checkbox.checked) {
+            selectedClients.add(clientId);
+        } else {
+            selectedClients.delete(clientId);
+        }
+
+        updateBulkActions();
+    }
+    // Update bulk actions visibility and count
+    function updateBulkActions() {
+        const bulkActions = document.getElementById('bulkActions');
+        const selectedCount = document.getElementById('selectedCount');
+
+        if (selectedClients.size > 0) {
+            bulkActions.classList.add('show');
+            selectedCount.textContent = `${selectedClients.size} client${selectedClients.size > 1 ? 's' : ''} selected`;
+        } else {
+            bulkActions.classList.remove('show');
+            selectedCount.textContent = '0 clients selected';
+        }
+    }
+    // Toggle select all checkboxes
+    function toggleSelectAll() {
+        const selectAllCheckbox = document.getElementById('selectAll');
+        const checkboxes = document.querySelectorAll('.client-checkbox');
+
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = selectAllCheckbox.checked;
+            checkbox.dispatchEvent(new Event('change'));
+        });
+    }
+    // Delete client function
+    function deleteClient(clientId) {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "This action cannot be undone.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Delete',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/clients/delete/${clientId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('input[name="csrf_token"]').value
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('Client deleted successfully', 'success');
+                        goToPage(1); // Refresh the page
+                    } else {
+                        showToast(data.error || 'Failed to delete client', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Delete error:', error);
+                    showToast('Failed to delete client. Please try again.', 'error');
+                });
+            }
+        });
+    }
+    // Show toast notification
+    function showToast(message, type) {
+        Toastify({
+            text: message,
+            duration: 3000,
+            close: true,
+            gravity: 'top',
+            position: 'right',
+            backgroundColor: type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6',
+            className: `toast-${type}`
+        }).showToast();
+    }
+    // Handle bulk edit action
+    function handleBulkEdit() {
+        if (selectedClients.size === 0) {
+            showToast('No clients selected for bulk edit', 'info');
+            return;
+        }
+        const clientIds = Array.from(selectedClients).join(',');
+        window.location.href = `/clients/bulk_edit?ids=${clientIds}`;
+    }
+    // Handle bulk delete action
+
+
+    function handleBulkDelete() {
+        if (selectedClients.size === 0) {
+            showToast('No clients selected for bulk delete', 'info');
+            return;
+        }
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "This action cannot be undone.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Delete',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch('/clients/bulk_delete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('input[name="csrf_token"]').value
+                    },
+                    body: JSON.stringify({ ids: Array.from(selectedClients) })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('Selected clients deleted successfully', 'success');
+                        goToPage(1); // Refresh the page
+                    } else {
+                        showToast(data.error || 'Failed to delete clients', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Bulk delete error:', error);
+                    showToast('Failed to delete clients. Please try again.', 'error');
+                });
+            }
+        });
+    }
+    // Handle bulk email action
+    function handleBulkEmail() {
+        if (selectedClients.size === 0) {
+            showToast('No clients selected for bulk email', 'info');
+            return;
+        }
+        const clientIds = Array.from(selectedClients).join(',');
+        window.location.href = `/clients/bulk_email?ids=${clientIds}`;
+    }
+    // Handle back/forward navigation
+    window.addEventListener('popstate', () => {
+        const searchParams = new URLSearchParams(window.location.search);
+        const page = searchParams.get('page') || '1';
+        const perPage = searchParams.get('per_page') || '10';
+        const search = searchParams.get('search') || '';
+        
+        document.getElementById('searchInput').value = search;
+        goToPage(page);
+    });
+    // Initialize the page with the current search term
+    document.addEventListener('DOMContentLoaded', () => {
+        const searchInput = document.getElementById('searchInput');
+        searchInput.value = '{{ search.replace("%", "") if search else "" }}';
+        if (searchInput.value) {
+            debounceSearch(searchInput.value);
+        }
+    });
+    // Initialize the select all checkbox state
+    document.addEventListener('DOMContentLoaded', () => {
+        const selectAllCheckbox = document.getElementById('selectAll');
+        const checkboxes = document.querySelectorAll('.client-checkbox');
+        
+        // Check if all checkboxes are selected
+        const allSelected = Array.from(checkboxes).every(checkbox => checkbox.checked);
+        selectAllCheckbox.checked = allSelected;
+        
+        // Attach event listeners to checkboxes
+        attachCheckboxListeners();
+    });
+    // Initialize the bulk actions visibility
+    document.addEventListener('DOMContentLoaded', () => {
+        const bulkActions = document.getElementById('bulkActions');
+        if (selectedClients.size > 0) {
+            bulkActions.classList.add('show');
+            document.getElementById('selectedCount').textContent = `${selectedClients.size} client${selectedClients.size > 1 ? 's' : ''} selected`;
+        } else {
+            bulkActions.classList.remove('show');
+            document.getElementById('selectedCount').textContent = '0 clients selected';
+        }
+    });
+    // Initialize the pagination controls
+    document.addEventListener('DOMContentLoaded', () => {
+        const perPageSelect = document.getElementById('perPageSelect');
+        perPageSelect.value = '{{ per_page }}';
+        
+        // Update pagination controls based on current page
+        const currentPage = parseInt('{{ page_number }}', 10);
+        const totalPages = parseInt('{{ total_pages }}', 10);
+        
+        const firstPageBtn = document.querySelector('.nav-btn[title="First Page"]');
+        const prevPageBtn = document.querySelector('.nav-btn[title="Previous Page"]');
+        const nextPageBtn = document.querySelector('.nav-btn[title="Next Page"]');
+        const lastPageBtn = document.querySelector('.nav-btn[title="Last Page"]');
+        
+        firstPageBtn.disabled = currentPage === 1;
+        prevPageBtn.disabled = currentPage === 1;
+        nextPageBtn.disabled = currentPage === totalPages;
+        lastPageBtn.disabled = currentPage === totalPages;
+    });
+</script>
+{% endblock %}

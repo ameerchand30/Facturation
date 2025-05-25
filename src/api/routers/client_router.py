@@ -3,7 +3,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 
 
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from src.database import get_db
 from src.api.models.client import Clients
 from src.api.schemas.client import Client,ClientCreate,ClientUpdate
@@ -14,6 +14,7 @@ from src.api.models.public.user import UserType
 
 from fastapi_csrf_protect import CsrfProtect
 from fastapi_csrf_protect.exceptions import CsrfProtectError
+from src.CSRF.csrf_service import CsrfService
 
 from src.core.shared import templates
 
@@ -33,35 +34,84 @@ async def read_clients(
     request: Request,
     db: Session = Depends(get_db),
     user: dict = Depends(require_user_type(UserType.ENTERPRISE)),
-    enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile)
+    enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile),
+    page: int = 1,
+    per_page: int = 10,
+    search: str = None,
+    sort: str = "id",
+    order: str = "desc"
 ):
-    # Check if user is unauthorized
     if isinstance(user, (RedirectResponse, JSONResponse)):
-        return RedirectResponse(
-            url="/login?error=unauthorized",
-            status_code=302
-        )
+        return RedirectResponse(url="/login?error=unauthorized", status_code=302)
 
     try:
-        # Get clients for the enterprise
-        clients = db.query(Clients).filter(
-            Clients.enterprise_profile_id == enterprise_profile.id
-        ).order_by(Clients.id.desc()).all()
+        # Ensure valid pagination parameters
+        page = max(1, page)  # Ensure page is at least 1
+        per_page = min(max(10, per_page), 100)  # Limit between 10 and 100
 
-        return templates.TemplateResponse(
+        # Base query
+        query = db.query(Clients).filter(
+            Clients.enterprise_profile_id == enterprise_profile.id
+        )
+
+        # Apply search if provided
+        if search:
+            search = f"%{search}%"
+            query = query.filter(
+                or_(
+                    Clients.name.ilike(search),
+                    Clients.email.ilike(search),
+                    Clients.idNumber.ilike(search),
+                    Clients.Billing_Street.ilike(search)
+                )
+            )
+
+        # Get total count for pagination
+        total_items = query.count()
+        total_pages = max(1, (total_items + per_page - 1) // per_page)
+
+        # Adjust page if it exceeds total pages
+        page = min(page, total_pages)
+
+        # Apply sorting
+        sort_column = getattr(Clients, sort, Clients.id)
+        if order == "asc":
+            query = query.order_by(sort_column.asc())
+        else:
+            query = query.order_by(sort_column.desc())
+
+        # Apply pagination
+        offset = (page - 1) * per_page
+        clients = query.offset(offset).limit(per_page).all()
+
+        # Create response
+        response = templates.TemplateResponse(
             "pages/clients.html",
             {
                 "request": request,
                 "clients": clients,
                 "current_page": "view_clients",
+                "page_number": page,
+                "total_pages": total_pages,
+                "per_page": per_page,
+                "total_items": total_items,
+                "search": search,
+                "sort": sort,
+                "order": order,
                 "user": user,
-                "enterprise_id": enterprise_profile.id,
-                "csrf_token": request.state.csrf_token if hasattr(request.state, 'csrf_token') else None,
-                "error": request.query_params.get("error"),
-                "success": request.query_params.get("success")
-            },
-            status_code=200
+                "enterprise_id": enterprise_profile.id
+            }
         )
+
+        # Generate CSRF token
+        try:
+            csrf_token = CsrfService.generate_csrf_token_for_form(response)
+            response.context["csrf_token"] = csrf_token
+        except Exception as csrf_error:
+            print(f"CSRF Error: {csrf_error}")
+            pass
+
+        return response
 
     except Exception as e:
         print(f"Error fetching clients: {e}")
