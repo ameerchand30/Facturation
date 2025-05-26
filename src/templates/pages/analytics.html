@@ -1,20 +1,19 @@
 {% extends "layout/base.html" %}
 
-{% block title %}Analytics Dashboard - Chand Invoices{% endblock %}
+{% block title %}Dashboard - {{ enterprise.company_name }}{% endblock %}
+
 
 {% block content %}
 <div class="container-fluid">
-    <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="h3 fw-bold text-primary mb-1">Analytics Dashboard</h1>
-            <p class="text-muted mb-0">Track your business performance and insights</p>
+            <h1 class="h3 fw-bold text-primary mb-1">Enterprise Dashboard</h1>
+            <p class="text-muted mb-0">Overview of your business performance</p>
         </div>
         <div class="d-flex gap-2">
             <div class="btn-group period-selector" role="group">
-                <button type="button" class="btn btn-outline btn-sm active" data-period="today">Today</button>
-                <button type="button" class="btn btn-outline btn-sm" data-period="weekly">Weekly</button>
                 <button type="button" class="btn btn-outline btn-sm" data-period="monthly">Monthly</button>
+                <button type="button" class="btn btn-outline btn-sm" data-period="today">Today</button>
                 <button type="button" class="btn btn-outline btn-sm" data-period="annual">Annual</button>
             </div>
             <button class="btn btn-primary btn-sm" onclick="exportData()">
@@ -23,7 +22,6 @@
         </div>
     </div>
 
-    <!-- Key Metrics Cards -->
     <div class="row g-4 mb-4" data-aos="fade-up">
         <div class="col-xl-3 col-md-6">
             <div class="stat-card">
@@ -32,9 +30,9 @@
                 </div>
                 <div class="stat-value" id="total-income">€0.00</div>
                 <div class="stat-label">Total Income</div>
-                <div class="stat-change positive" id="income-change">
+                <div class="stat-change positive">
                     <i class="fas fa-arrow-up"></i>
-                    <span>+12.5%</span>
+                    <span>+0.0%</span>
                 </div>
             </div>
         </div>
@@ -46,23 +44,23 @@
                 </div>
                 <div class="stat-value" id="total-orders">0</div>
                 <div class="stat-label">Total Orders</div>
-                <div class="stat-change positive" id="orders-change">
+                <div class="stat-change positive">
                     <i class="fas fa-arrow-up"></i>
-                    <span>+8.2%</span>
+                    <span>+0.0%</span>
                 </div>
             </div>
         </div>
-
+        
         <div class="col-xl-3 col-md-6">
             <div class="stat-card">
                 <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
                     <i class="fas fa-users"></i>
                 </div>
-                <div class="stat-value" id="total-clients">0</div>
+                <div class="stat-value">N/A</div>
                 <div class="stat-label">Active Clients</div>
-                <div class="stat-change positive" id="clients-change">
+                <div class="stat-change positive">
                     <i class="fas fa-arrow-up"></i>
-                    <span>+5.7%</span>
+                    <span>+0.0%</span>
                 </div>
             </div>
         </div>
@@ -72,24 +70,22 @@
                 <div class="stat-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
                     <i class="fas fa-chart-line"></i>
                 </div>
-                <div class="stat-value" id="avg-order">€0.00</div>
+                <div class="stat-value">€N/A</div>
                 <div class="stat-label">Average Order</div>
-                <div class="stat-change negative" id="avg-change">
+                <div class="stat-change negative">
                     <i class="fas fa-arrow-down"></i>
-                    <span>-2.1%</span>
+                    <span>-0.0%</span>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Charts Row -->
     <div class="row g-4 mb-4">
-        <!-- Main Chart -->
-        <div class="col-xl-8">
+        <div class="col-lg-12">
             <div class="data-table" data-aos="fade-up" data-aos-delay="100">
                 <div class="table-header">
                     <div>
-                        <h5 class="table-title mb-0">Revenue & Orders Trend</h5>
+                        <h5 class="table-title mb-0">Orders & Income Analysis</h5>
                         <small class="text-muted">Track performance over time</small>
                     </div>
                     <div class="d-flex gap-2">
@@ -103,493 +99,268 @@
                 </div>
             </div>
         </div>
-
-        <!-- Performance Indicators -->
-        <div class="col-xl-4">
-            <div class="data-table h-100" data-aos="fade-up" data-aos-delay="200">
-                <div class="table-header">
-                    <h5 class="table-title mb-0">Performance Indicators</h5>
-                </div>
-                <div class="p-3">
-                    <div class="mb-4">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="text-muted">Revenue Goal</span>
-                            <span class="fw-bold" id="revenue-progress">75%</span>
-                        </div>
-                        <div class="progress" style="height: 8px;">
-                            <div class="progress-bar" style="width: 75%; background: var(--gradient);"></div>
-                        </div>
-                    </div>
-
-                    <div class="mb-4">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="text-muted">Orders Target</span>
-                            <span class="fw-bold" id="orders-progress">82%</span>
-                        </div>
-                        <div class="progress" style="height: 8px;">
-                            <div class="progress-bar" style="width: 82%; background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);"></div>
-                        </div>
-                    </div>
-
-                    <div class="mb-4">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="text-muted">Client Retention</span>
-                            <span class="fw-bold" id="retention-progress">91%</span>
-                        </div>
-                        <div class="progress" style="height: 8px;">
-                            <div class="progress-bar" style="width: 91%; background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);"></div>
-                        </div>
-                    </div>
-
-                    <!-- Mini Stats -->
-                    <div class="row g-3 mt-3">
-                        <div class="col-6">
-                            <div class="text-center p-3 rounded-3" style="background: rgba(99, 102, 241, 0.1);">
-                                <div class="h5 mb-1 text-primary fw-bold" id="pending-invoices">12</div>
-                                <small class="text-muted">Pending</small>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="text-center p-3 rounded-3" style="background: rgba(16, 185, 129, 0.1);">
-                                <div class="h5 mb-1 text-success fw-bold" id="paid-invoices">48</div>
-                                <small class="text-muted">Paid</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 
-    <!-- Additional Analytics -->
-    <div class="row g-4">
-        <!-- Top Clients -->
-        <div class="col-xl-6">
-            <div class="data-table" data-aos="fade-up" data-aos-delay="300">
-                <div class="table-header">
-                    <h5 class="table-title mb-0">Top Clients</h5>
-                    <small class="text-muted">Highest revenue contributors</small>
-                </div>
-                <div class="table-responsive">
-                    <table class="modern-table">
-                        <thead>
-                            <tr>
-                                <th>Client</th>
-                                <th>Orders</th>
-                                <th>Revenue</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="top-clients-table">
-                            <tr>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="user-avatar me-3" style="width: 35px; height: 35px; font-size: 0.8rem;">AC</div>
-                                        <div>
-                                            <div class="fw-semibold">Acme Corporation</div>
-                                            <small class="text-muted">acme@example.com</small>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>24</td>
-                                <td>€12,450</td>
-                                <td><span class="status-badge status-active">Active</span></td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="user-avatar me-3" style="width: 35px; height: 35px; font-size: 0.8rem;">TI</div>
-                                        <div>
-                                            <div class="fw-semibold">Tech Innovations</div>
-                                            <small class="text-muted">tech@example.com</small>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>18</td>
-                                <td>€9,850</td>
-                                <td><span class="status-badge status-active">Active</span></td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="user-avatar me-3" style="width: 35px; height: 35px; font-size: 0.8rem;">GS</div>
-                                        <div>
-                                            <div class="fw-semibold">Global Solutions</div>
-                                            <small class="text-muted">global@example.com</small>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>15</td>
-                                <td>€7,200</td>
-                                <td><span class="status-badge status-pending">Pending</span></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- Recent Activity -->
-        <div class="col-xl-6">
-            <div class="data-table" data-aos="fade-up" data-aos-delay="400">
-                <div class="table-header">
-                    <h5 class="table-title mb-0">Recent Activity</h5>
-                    <small class="text-muted">Latest business activities</small>
-                </div>
-                <div class="p-3">
-                    <div class="timeline">
-                        <div class="timeline-item">
-                            <div class="timeline-marker bg-success"></div>
-                            <div class="timeline-content">
-                                <h6 class="mb-1">New order received</h6>
-                                <p class="text-muted mb-1">Order #INV-2024-001 from Acme Corp</p>
-                                <small class="text-muted">2 hours ago</small>
-                            </div>
-                        </div>
-                        <div class="timeline-item">
-                            <div class="timeline-marker bg-primary"></div>
-                            <div class="timeline-content">
-                                <h6 class="mb-1">Payment received</h6>
-                                <p class="text-muted mb-1">€2,450 from Tech Innovations</p>
-                                <small class="text-muted">5 hours ago</small>
-                            </div>
-                        </div>
-                        <div class="timeline-item">
-                            <div class="timeline-marker bg-warning"></div>
-                            <div class="timeline-content">
-                                <h6 class="mb-1">Invoice overdue</h6>
-                                <p class="text-muted mb-1">INV-2024-987 requires attention</p>
-                                <small class="text-muted">1 day ago</small>
-                            </div>
-                        </div>
-                        <div class="timeline-item">
-                            <div class="timeline-marker bg-info"></div>
-                            <div class="timeline-content">
-                                <h6 class="mb-1">New client added</h6>
-                                <p class="text-muted mb-1">Digital Dynamics joined</p>
-                                <small class="text-muted">2 days ago</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
-</div>
-
-<!-- Custom Styles for Timeline -->
-<style>
-.timeline {
-    position: relative;
-    padding-left: 2rem;
-}
-
-.timeline::before {
-    content: '';
-    position: absolute;
-    left: 0.75rem;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background: var(--border);
-}
-
-.timeline-item {
-    position: relative;
-    margin-bottom: 2rem;
-}
-
-.timeline-marker {
-    position: absolute;
-    left: -2.25rem;
-    top: 0.25rem;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    border: 3px solid white;
-    box-shadow: var(--shadow);
-}
-
-.timeline-content h6 {
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-.progress {
-    border-radius: 20px;
-    background: var(--light);
-}
-
-.progress-bar {
-    border-radius: 20px;
-}
-</style>
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize AOS
-    AOS.init({
-        duration: 600,
-        once: true
-    });
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize AOS
+        AOS.init({
+            duration: 600,
+            once: true
+        });
 
-    let mainChart;
-    let currentPeriod = 'today';
-    let chartType = 'line';
+        let mainChart;
+        let currentPeriod = 'monthly'; // Default to monthly as per your previous setup
 
-    // Sample data - replace with actual API calls
-    const sampleData = {
-        today: {
-            metrics: {
-                total_income: 2450.75,
-                total_orders: 12,
-                total_clients: 8,
-                avg_order: 204.23,
-                period: 'today'
-            },
-            chart_data: [
-                { date: '00:00', orders: 0, income: 0 },
-                { date: '03:00', orders: 2, income: 450 },
-                { date: '06:00', orders: 1, income: 200 },
-                { date: '09:00', orders: 3, income: 650 },
-                { date: '12:00', orders: 4, income: 800 },
-                { date: '15:00', orders: 2, income: 350 },
-                { date: '18:00', orders: 0, income: 0 },
-                { date: '21:00', orders: 0, income: 0 }
-            ]
-        },
-        weekly: {
-            metrics: {
-                total_income: 15750.50,
-                total_orders: 84,
-                total_clients: 32,
-                avg_order: 187.50,
-                period: 'weekly'
-            },
-            chart_data: [
-                { date: 'Mon', orders: 12, income: 2450 },
-                { date: 'Tue', orders: 8, income: 1600 },
-                { date: 'Wed', orders: 15, income: 3200 },
-                { date: 'Thu', orders: 10, income: 1950 },
-                { date: 'Fri', orders: 18, income: 3800 },
-                { date: 'Sat', orders: 14, income: 2100 },
-                { date: 'Sun', orders: 7, income: 650 }
-            ]
-        },
-        monthly: {
-            metrics: {
-                total_income: 68250.75,
-                total_orders: 342,
-                total_clients: 125,
-                avg_order: 199.56,
-                period: 'monthly'
-            },
-            chart_data: [
-                { date: 'Week 1', orders: 89, income: 17800 },
-                { date: 'Week 2', orders: 76, income: 15200 },
-                { date: 'Week 3', orders: 94, income: 18900 },
-                { date: 'Week 4', orders: 83, income: 16350 }
-            ]
-        },
-        annual: {
-            metrics: {
-                total_income: 825750.25,
-                total_orders: 4128,
-                total_clients: 489,
-                avg_order: 200.12,
-                period: 'annual'
-            },
-            chart_data: [
-                { date: 'Jan', orders: 345, income: 69000 },
-                { date: 'Feb', orders: 298, income: 59600 },
-                { date: 'Mar', orders: 387, income: 77400 },
-                { date: 'Apr', orders: 423, income: 84600 },
-                { date: 'May', orders: 356, income: 71200 },
-                { date: 'Jun', orders: 389, income: 77800 },
-                { date: 'Jul', orders: 412, income: 82400 },
-                { date: 'Aug', orders: 378, income: 75600 },
-                { date: 'Sep', orders: 334, income: 66800 },
-                { date: 'Oct', orders: 367, income: 73400 },
-                { date: 'Nov', orders: 298, income: 59600 },
-                { date: 'Dec', orders: 341, income: 68200 }
-            ]
-        }
-    };
-
-    // Initialize chart
-    function initChart() {
-        const ctx = document.getElementById('main-chart').getContext('2d');
-        const data = sampleData[currentPeriod];
-        
-        mainChart = new Chart(ctx, {
-            type: chartType,
-            data: {
-                labels: data.chart_data.map(d => d.date),
-                datasets: [{
-                    label: 'Orders',
-                    data: data.chart_data.map(d => d.orders),
-                    borderColor: '#f093fb',
-                    backgroundColor: chartType === 'bar' ? '#f093fb' : 'rgba(240, 147, 251, 0.1)',
-                    tension: 0.4,
-                    fill: chartType === 'line'
-                }, {
-                    label: 'Income (€)',
-                    data: data.chart_data.map(d => d.income),
-                    borderColor: '#667eea',
-                    backgroundColor: chartType === 'bar' ? '#667eea' : 'rgba(102, 126, 234, 0.1)',
-                    tension: 0.4,
-                    fill: chartType === 'line',
-                    yAxisID: 'y1'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'top',
+        // Function to fetch data from the backend
+        async function fetchDashboardData(period) {
+            try {
+                // Show loading indicator
+                Swal.fire({
+                    title: 'Loading...',
+                    text: 'Fetching dashboard data',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
                     }
-                },
-                scales: {
-                    y: {
-                        type: 'linear',
-                        display: true,
-                        position: 'left',
-                        title: {
-                            display: true,
-                            text: 'Orders'
-                        }
-                    },
-                    y1: {
-                        type: 'linear',
-                        display: true,
-                        position: 'right',
-                        title: {
-                            display: true,
-                            text: 'Income (€)'
-                        },
-                        grid: {
-                            drawOnChartArea: false,
-                        },
+                });
+
+                const response = await fetch(`/enterprise/analytics?period=${period}`, {
+                    headers: {
+                        'Accept': 'application/json' // Request JSON response
                     }
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
-            }
-        });
-    }
+                const data = await response.json();
+                console.log("Fetched data:", data); // Log the data for debugging
+                
+                // Close loading indicator
+                Swal.close();
 
-    // Update metrics display
-    function updateMetrics(metrics) {
-        document.getElementById('total-income').textContent = `€${metrics.total_income.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-        document.getElementById('total-orders').textContent = metrics.total_orders.toLocaleString();
-        document.getElementById('total-clients').textContent = metrics.total_clients.toLocaleString();
-        document.getElementById('avg-order').textContent = `€${metrics.avg_order.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-    }
-
-    // Period selector handlers
-    document.querySelectorAll('.period-selector button').forEach(button => {
-        button.addEventListener('click', function() {
-            // Remove active class from all buttons
-            document.querySelectorAll('.period-selector button').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            // Add active class to clicked button
-            this.classList.add('active');
-            
-            currentPeriod = this.dataset.period;
-            const data = sampleData[currentPeriod];
-            
-            // Update chart
-            if (mainChart) {
-                mainChart.data.labels = data.chart_data.map(d => d.date);
-                mainChart.data.datasets[0].data = data.chart_data.map(d => d.orders);
-                mainChart.data.datasets[1].data = data.chart_data.map(d => d.income);
-                mainChart.update('active');
-            }
-            
-            // Update metrics
-            updateMetrics(data.metrics);
-            
-            // Show toast notification
-            Toastify({
-                text: `Dashboard updated for ${currentPeriod} period`,
-                duration: 2000,
-                gravity: "top",
-                position: "right",
-                backgroundColor: "linear-gradient(to right, #667eea, #764ba2)",
-            }).showToast();
-        });
-    });
-
-    // Toggle chart type
-    window.toggleChartType = function() {
-        chartType = chartType === 'line' ? 'bar' : 'line';
-        
-        if (mainChart) {
-            mainChart.destroy();
-        }
-        
-        initChart();
-        
-        Toastify({
-            text: `Switched to ${chartType} chart`,
-            duration: 2000,
-            gravity: "top",
-            position: "right",
-            backgroundColor: "linear-gradient(to right, #4facfe, #00f2fe)",
-        }).showToast();
-    };
-
-    // Export functionality
-    window.exportData = function() {
-        Swal.fire({
-            title: 'Export Data',
-            text: 'Choose export format',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: 'PDF Report',
-            cancelButtonText: 'CSV Data',
-            confirmButtonColor: '#667eea',
-            cancelButtonColor: '#6c757d'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Export as PDF
+                // Show success message
                 Toastify({
-                    text: "PDF report generated successfully!",
-                    duration: 3000,
+                    text: `Dashboard data updated for ${period} period`,
+                    duration: 1500,
                     gravity: "top",
                     position: "right",
                     backgroundColor: "linear-gradient(to right, #667eea, #764ba2)",
                 }).showToast();
-            } else if (result.dismiss === Swal.DismissReason.cancel) {
-                // Export as CSV
-                Toastify({
-                    text: "CSV data exported successfully!",
-                    duration: 3000,
-                    gravity: "top",
-                    position: "right",
-                    backgroundColor: "linear-gradient(to right, #4facfe, #00f2fe)",
-                }).showToast();
+
+                return data;
+            } catch (error) {
+                console.error("Error fetching dashboard data:", error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: `Failed to fetch dashboard data! ${error.message}`
+                });
+                return null;
             }
-        });
-    };
+        }
 
-    // Initialize with today's data
-    updateMetrics(sampleData.today.metrics);
-    initChart();
+        // Function to update metrics on the page
+        function updateMetrics(metrics) {
+            document.getElementById('total-income').textContent = `€${(metrics.total_income || 0).toFixed(2)}`;
+            document.getElementById('total-orders').textContent = metrics.total_orders || 0;
 
-    // Add some loading animations
-    setTimeout(() => {
-        document.querySelectorAll('.stat-card').forEach((card, index) => {
-            setTimeout(() => {
-                card.style.transform = 'translateY(0)';
-                card.style.opacity = '1';
-            }, index * 100);
+            // Update active period button text
+            document.querySelectorAll('.period-label').forEach(label => {
+                label.textContent = metrics.period.charAt(0).toUpperCase() + metrics.period.slice(1);
+            });
+        }
+
+        // Function to initialize or update the main chart using Chart.js
+        function initOrUpdateChart(chartData) {
+            const ctx = document.getElementById('main-chart').getContext('2d');
+
+            const labels = chartData.map(item => item.date);
+            const orders = chartData.map(item => item.orders);
+            const income = chartData.map(item => item.income);
+
+            const data = {
+                labels: labels,
+                datasets: [{
+                    label: 'Total Income (€)',
+                    data: income,
+                    borderColor: '#667eea', // Primary color
+                    backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                    fill: true,
+                    tension: 0.4,
+                    yAxisID: 'y'
+                }, {
+                    label: 'Total Orders',
+                    data: orders,
+                    borderColor: '#f5576c', // Secondary color
+                    backgroundColor: 'rgba(245, 87, 108, 0.2)',
+                    fill: true,
+                    tension: 0.4,
+                    yAxisID: 'y1'
+                }]
+            };
+
+            const config = {
+                type: 'line', // Default to line chart
+                data: data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    stacked: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += context.dataset.label.includes('Income') ? `€${context.parsed.y.toFixed(2)}` : context.parsed.y;
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Income (€)'
+                            },
+                            grid: {
+                                drawOnChartArea: false,
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return '€' + value;
+                                }
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Orders'
+                            },
+                            grid: {
+                                drawOnChartArea: false,
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value;
+                                }
+                            }
+                        },
+                    }
+                },
+            };
+
+            if (mainChart) {
+                mainChart.destroy(); // Destroy existing chart before creating a new one
+            }
+            mainChart = new Chart(ctx, config);
+        }
+
+        // Function to handle period selection
+        async function loadDataForPeriod(period) {
+            currentPeriod = period;
+            document.querySelectorAll('.period-selector .btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`.period-selector button[data-period="${period}"]`).classList.add('active');
+
+            const data = await fetchDashboardData(period);
+            if (data) {
+                updateMetrics(data.metrics);
+                initOrUpdateChart(data.chart_data);
+            }
+        }
+
+        // Event listeners for period buttons
+        document.querySelectorAll('.period-selector .btn').forEach(button => {
+            button.addEventListener('click', function() {
+                loadDataForPeriod(this.dataset.period);
+            });
         });
-    }, 200);
-});
+
+        // Toggle chart type (e.g., line to bar)
+        function toggleChartType() {
+            if (mainChart) {
+                const newType = mainChart.config.type === 'line' ? 'bar' : 'line';
+                mainChart.config.type = newType;
+                mainChart.update();
+            }
+        }
+        window.toggleChartType = toggleChartType; // Make it globally accessible
+
+        // Export data function
+        const exportData = () => {
+            Swal.fire({
+                title: 'Export Dashboard Data',
+                text: 'Choose your export format:',
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonText: 'PDF Report',
+                cancelButtonText: 'CSV Data',
+                confirmButtonColor: '#667eea',
+                cancelButtonColor: '#6c757d'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Toastify({
+                        text: "PDF report generated successfully!",
+                        duration: 3000,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: "linear-gradient(to right, #667eea, #764ba2)",
+                    }).showToast();
+                } else if (result.dismiss === Swal.DismissReason.cancel) {
+                    Toastify({
+                        text: "CSV data exported successfully!",
+                        duration: 3000,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: "linear-gradient(to right, #4facfe, #00f2fe)",
+                    }).showToast();
+                }
+            });
+        };
+        window.exportData = exportData; // Make it globally accessible
+
+        // Load initial data (default period)
+        loadDataForPeriod(currentPeriod);
+
+        // Add some loading animations
+        setTimeout(() => {
+            document.querySelectorAll('.stat-card').forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.transform = 'translateY(0)';
+                    card.style.opacity = '1';
+                }, index * 100);
+            });
+        }, 100);
+    });
 </script>
 {% endblock %}
