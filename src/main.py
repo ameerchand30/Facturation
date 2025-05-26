@@ -58,7 +58,7 @@ app.add_middleware(SessionMiddleware, secret_key="your-secret-key")
 
 @app.get("/")
 async def root(request: Request):
-    return templates.TemplateResponse("pages/dashboard.html", {"request": request})
+    return templates.TemplateResponse("pages/User/LandingPage/landing-page.html", {"request": request})
 
 """ # Initialize CSRF protection
 csrf_protect = CsrfProtect()
