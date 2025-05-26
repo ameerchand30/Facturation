@@ -855,6 +855,7 @@
                 <table class="preview-table">
                     <thead>
                         <tr>
+                            <th class="text-center">Item</th>
                             <th>Description</th>
                             <th class="text-center">Unit Price</th>
                             <th class="text-right">Total</th>
@@ -862,7 +863,7 @@
                     </thead>
                     <tbody id="invoice_preview">
                         <tr>
-                            <td colspan="3" class="text-center" style="padding: 2rem; color: var(--text-secondary);">
+                            <td colspan="4" class="text-center" style="padding: 2rem; color: var(--text-secondary);">
                                 <i class="fas fa-inbox fa-2x"></i><br><br>
                                 Add items to see preview
                             </td>
@@ -959,6 +960,8 @@ document.addEventListener('DOMContentLoaded', function() {
             </tr>
         `;
         $('#invoiceItemsmain').append(newRow);
+
+        // Initialize autocomplete for new row
         $(`#productSearch_${itemCount}`).autocomplete({
             source: '{{ url_for("search_products") }}',
             minLength: 2,
@@ -969,18 +972,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 updateTotal(itemCount);
             }
         });
-        $(`#productUnitPri_${itemCount}`).on('input', function() {
-            updateTotal(itemCount);
-        });
-        $(`#productQty_${itemCount}`).on('input', function() {
-            updateTotal(itemCount);
-        });
-        $('.remove-item-btn').off('click').on('click', function() {
-            $(this).closest('tr').remove();
-            updateInvoicePreview();
-        });
-        updateInvoicePreview();
+
+        // Bind events to new row
+        bindRowEvents(itemCount);
     });
+
+    // Bind input events for the first row
+    bindRowEvents('0');
+
+    // Function to bind events to a row
+    function bindRowEvents(rowId) {
+        // Update on unit price change
+        $(`#productUnitPri_${rowId}`).on('input', function() {
+            updateTotal(rowId);
+        });
+
+        // Update on quantity change
+        $(`#productQty_${rowId}`).on('input', function() {
+            updateTotal(rowId);
+        });
+    }
+
     // Remove item row
     $('.remove-item-btn').on('click', function() {
         $(this).closest('tr').remove();
@@ -1087,15 +1099,17 @@ document.addEventListener('DOMContentLoaded', function() {
         
         $('#invoiceItemsmain tr').each(function() {
             const rowId = $(this).attr('id').split('_')[1];
+            const productname = $(`#productSearch_${rowId}`).val();
             const description = $(`#productDescription_${rowId}`).val();
             const unitPrice = parseFloat($(`#productUnitPri_${rowId}`).val()) || 0;
             const quantity = parseInt($(`#productQty_${rowId}`).val()) || 1;
             const total = unitPrice * quantity;
 
-            if (description && unitPrice > 0) {
+            if ( unitPrice > 0) {
                 itemsHtml += `
                     <tr>
-                        <td>${description}</td>
+                        <td>${productname || 'No no product name'}</td>
+                        <td>${description || 'No description'}</td>
                         <td class="text-center">€${unitPrice.toFixed(2)} × ${quantity}</td>
                         <td class="text-right">€${total.toFixed(2)}</td>
                     </tr>
@@ -1114,26 +1128,26 @@ document.addEventListener('DOMContentLoaded', function() {
         if (itemsHtml) {
             itemsHtml += `
                 <tr class="total-row">
-                    <td colspan="2">Subtotal</td>
+                    <td colspan="3">Subtotal</td>
                     <td class="text-right">€${subtotal.toFixed(2)}</td>
                 </tr>
                 <tr class="total-row">
-                    <td colspan="2">Tax (${taxRate}%)</td>
+                    <td colspan="3">Tax (${taxRate}%)</td>
                     <td class="text-right">€${taxAmount.toFixed(2)}</td>
                 </tr>
                 <tr class="total-row">
-                    <td colspan="2">Total Amount</td>
+                    <td colspan="3">Total Amount</td>
                     <td class="text-right">€${totalAmount.toFixed(2)}</td>
                 </tr>
             `;
             if (partialAmount > 0) {
                 itemsHtml += `
                     <tr class="total-row">
-                        <td colspan="2">Partial Payment</td>
+                        <td colspan="3">Partial Payment</td>
                         <td class="text-right">€${partialAmount.toFixed(2)}</td>
                     </tr>
                     <tr class="total-row">
-                        <td colspan="2">Remaining Balance</td>
+                        <td colspan="3">Remaining Balance</td>
                         <td class="text-right">€${remainingAmount.toFixed(2)}</td>
                     </tr>
                 `;
