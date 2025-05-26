@@ -653,7 +653,18 @@
         // Toggle current dropdown
         dropdown.classList.toggle('show');
          // Get dropdown position information
-        const dropdownRect = dropdown.getBoundingClientRect();
+        // Get the table's bounding rectangle
+        const table = dropdown.closest('.modern-table');
+        let dropdownRect;
+        if (table) {
+            const tableRect = table.getBoundingClientRect();
+            dropdownRect = {
+            top: tableRect.top,
+            bottom: tableRect.bottom
+            };
+        } else {
+            dropdownRect = dropdown.getBoundingClientRect();
+        }
         const viewportHeight = window.innerHeight;
         const spaceBelow = viewportHeight - dropdownRect.top;
         // Check if dropdown is cut off at bottom
