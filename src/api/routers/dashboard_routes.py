@@ -262,9 +262,9 @@ def calculate_growth(previous, current):
         return 0
     return ((current - previous) / previous) * 100
 
-# Enterprise dashboard
-@dashboard_router.get("/enterprise/dashboard", name="enterprise_dashboard")
-async def enterprise_dashboard(
+# Enterprise analytics dashboard
+@dashboard_router.get("/enterprise/analytics", name="enterprise_analytics")
+async def enterprise_analytics(
     request: Request,
     period: str = "monthly",
     db: Session = Depends(get_db),
@@ -343,14 +343,39 @@ async def enterprise_dashboard(
     # Otherwise return HTML template
 
     return templates.TemplateResponse(
-        "pages/dashboard.html",
+        "pages/analytics.html",
         {
             "request": request,
             "user": user,
             "current_page": "dashboard",
             **response_data
         }
-    )   
+    )  
+
+
+
+# to show analytics dashboard for each enterprise profile
+@dashboard_router.get("/enterprise/dashboard", name="enterprise_dashboard")
+async def enterprise_dashboard(
+
+    request: Request
+    , db: Session = Depends(get_db)
+    , user: dict = Depends(require_user_type(UserType.ENTERPRISE))
+    , enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile)
+):
+
+    return templates.TemplateResponse(
+        "pages/analytics.html",
+        {
+            "request": request,
+            "user": user,
+            "enterprise_profile": enterprise_profile,
+            "current_page": "analytics"
+        }
+    )
+
+
+
 # all about gmail listener and background tasks
 
 from src.api.dependencies.gmail.background_task_handler import GmailListener
