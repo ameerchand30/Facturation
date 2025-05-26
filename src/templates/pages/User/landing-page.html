@@ -1,5 +1,9 @@
 {% extends "pages/User/base.html" %}
 {% block title %}Welcome to Facturaization{% endblock %}
+{% block page_css %}
+<link rel="stylesheet" href="{{ url_for('static', path='/css/user/landingPage.css') }}">
+{% endblock %}
+
 
 {% block content %}
     

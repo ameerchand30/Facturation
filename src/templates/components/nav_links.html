@@ -1,6 +1,6 @@
         <div class="sidebar-nav">
             <div class="nav-item">
-                <a href="#" class="nav-link active">
+                <a href="{{ url_for('enterprise_dashboard') }}" class="nav-link {% if request.url.path.startswith('/enterprise/dashboard') %}active{% endif %}">
                     <i class="nav-icon fas fa-chart-line"></i>
                     <span class="nav-text">Dashboard</span>
                 </a>

@@ -357,23 +357,115 @@ async def enterprise_analytics(
 # to show analytics dashboard for each enterprise profile
 @dashboard_router.get("/enterprise/dashboard", name="enterprise_dashboard")
 async def enterprise_dashboard(
-
-    request: Request
-    , db: Session = Depends(get_db)
-    , user: dict = Depends(require_user_type(UserType.ENTERPRISE))
-    , enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile)
-):
+    request: Request,
+    db: Session = Depends(get_db),
+    user: dict = Depends(require_user_type(UserType.ENTERPRISE)),
+    enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile)
+) -> Dict[str, Any]:
+    # Get current month and year
+    today = datetime.now()
+    start_of_month = today.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    
+    # Calculate total revenue
+    total_revenue = db.query(
+        func.sum(InvoiceItem.quantity * InvoiceItem.unit_price)
+    ).join(
+        Invoice, Invoice.id == InvoiceItem.invoice_id
+    ).filter(
+        Invoice.enterprise_profile_id == enterprise_profile.id
+    ).scalar() or 0
+        
+    # Calculate this month's revenue
+    current_month_revenue = db.query(func.sum(Invoice.total_amount))\
+        .filter(
+            Invoice.enterprise_profile_id == enterprise_profile.id,
+            Invoice.creation_date >= start_of_month
+        ).scalar() or 0
+    
+    # Calculate revenue change percentage
+    last_month = start_of_month - timedelta(days=1)
+    last_month_start = last_month.replace(day=1)
+    last_month_revenue = db.query(func.sum(Invoice.total_amount))\
+        .filter(
+            Invoice.enterprise_profile_id == enterprise_profile.id,
+            Invoice.creation_date.between(last_month_start, start_of_month)
+        ).scalar() or 0
+    
+    revenue_change = calculate_percentage_change(current_month_revenue, last_month_revenue)
+    
+    # Get total clients count
+    total_clients = db.query(func.count(distinct(Invoice.client_id)))\
+        .filter(Invoice.enterprise_profile_id == enterprise_profile.id)\
+        .scalar() or 0
+    
+    # Get total invoices
+    total_invoices = db.query(func.count(Invoice.id))\
+        .filter(Invoice.enterprise_profile_id == enterprise_profile.id)\
+        .scalar() or 0
+    
+    # Get total products
+    total_products = db.query(func.count(ProductModel.id))\
+        .filter(ProductModel.enterprise_profile_id == enterprise_profile.id)\
+        .scalar() or 0
+    
+    # Get top 5 clients with their details
+    top_clients = db.query(
+        Clients,
+        func.count(Invoice.id).label('total_orders'),
+        func.sum(Invoice.total_amount).label('total_spent')
+    ).join(Invoice, Invoice.client_id == Clients.id)\
+    .filter(Invoice.enterprise_profile_id == enterprise_profile.id)\
+    .group_by(Clients.id)\
+    .order_by(func.sum(Invoice.total_amount).desc())\
+    .limit(5)\
+    .all()
+    
+    # Format client data
+    clients_data = [{
+        'id': client[0].id,  # Access first element of tuple (Clients object)
+        'name': client[0].name,
+        'email': client[0].email,
+        'phone': client[0].phone,
+        'status': get_client_status(client[0]),
+        'total_orders': client.total_orders,
+        'total_spent': client.total_spent
+    } for client in top_clients]
 
     return templates.TemplateResponse(
-        "pages/analytics.html",
+        "pages/dashboard.html",
         {
             "request": request,
             "user": user,
             "enterprise_profile": enterprise_profile,
-            "current_page": "analytics"
+            "current_page": "dashboard",
+            "stats": {
+                "total_revenue": total_revenue,
+                "revenue_change": revenue_change,
+                "total_clients": total_clients,
+                "total_invoices": total_invoices,
+                "total_products": total_products,
+                "current_month_revenue": current_month_revenue
+            },
+            "top_clients": clients_data
         }
     )
 
+def calculate_percentage_change(current: float, previous: float) -> float:
+    """Calculate percentage change between two values"""
+    if previous == 0:
+        return 100 if current > 0 else 0
+    return ((current - previous) / previous) * 100
+
+def get_client_status(client: Clients) -> str:
+    """Determine client status based on activity"""
+    return "active" 
+    if client.last_activity_date:
+        days_since_activity = (datetime.now() - client.last_activity_date).days
+        if days_since_activity <= 30:
+            return "active"
+        elif days_since_activity <= 90:
+            return "pending"
+    return "inactive"
 
 
 # all about gmail listener and background tasks
