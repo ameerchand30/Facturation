@@ -184,6 +184,8 @@ async def edit_invoice_form(invoice_id: int, request: Request, db: Session = Dep
 @invoice_router.post("/", response_model=dict, name="create_invoice")
 def create_invoice(invoice: InvoiceCreate, db: Session = Depends(get_db), user: dict = Depends(require_user_type(UserType.ENTERPRISE)), enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile)):
     # Check authorization
+    print("Creating invoice with data:", invoice)
+   
     auth_check = check_authorization(user)
     if auth_check:
         return auth_check

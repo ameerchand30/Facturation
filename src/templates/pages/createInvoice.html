@@ -590,7 +590,7 @@
 
                             <div class="modern-form-group">
                                 <label class="modern-label" for="enterpriseSelect">Select Enterprise</label>
-                                <select id="enterpriseSelect" name="enterpriseId" class="modern-select" required>
+                                <select id="enterpriseId" name="enterpriseId" class="modern-select" required>
                                     <option value="">Choose an enterprise...</option>
                                     {% if enterprise_data %}
                                         {% for enterprise in enterprise_data %}
@@ -895,163 +895,285 @@
 
 {% block extra_js %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Initialize date pickers
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('creationDate').value = today;
-        document.getElementById('paidDate').value = today;
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize date pickers
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('creationDate').value = today;
+    document.getElementById('paidDate').value = today;
 
-        // Initialize customer search autocomplete
-        $('#customerSearch').autocomplete({
-            source: '{{ url_for("search_clients") }}',
-            minLength: 2,
-            select: function(event, ui) {
-                $('#customerId').val(ui.item.id);
-                $('#customerEmail').val(ui.item.email);
-            }
-        });
+    // Initialize customer search autocomplete
+    $('#customerSearch').autocomplete({
+        source: '{{ url_for("search_clients") }}',
+        minLength: 2,
+        select: function(event, ui) {
+            $('#customerId').val(ui.item.id);
+            $('#customerEmail').val(ui.item.email);
+        }
+    });
 
-        // Initialize product search autocomplete
-        $('.productSearch').autocomplete({
+    // Initialize product search autocomplete
+    $('.productSearch').autocomplete({
+        source: '{{ url_for("search_products") }}',
+        minLength: 2,
+        select: function(event, ui) {
+            const rowId = $(this).attr('id').split('_')[1];
+            $(`#productId_${rowId}`).val(ui.item.id);
+            $(`#productDescription_${rowId}`).val(ui.item.description);
+            $(`#productUnitPri_${rowId}`).val(ui.item.unit_price);
+            updateTotal(rowId);
+        }
+    });
+
+    // Add new item row
+    let itemCount = 1;
+    $('.add-item-btn').click(function() {
+        itemCount++;
+        const newRow = `
+            <tr id="row_${itemCount}">
+                <td>
+                    <input type="text" id="productSearch_${itemCount}" name="productSearch" 
+                           class="table-input productSearch" placeholder="Search products...">
+                    <input type="hidden" id="productId_${itemCount}" name="productId" value="">
+                </td>
+                <td>
+                    <input type="text" id="productDescription_${itemCount}" name="productDescription" 
+                           class="table-input" placeholder="Description..." readonly>
+                </td>
+                <td>
+                    <input type="number" id="productUnitPri_${itemCount}" name="productUnitPri" 
+                           class="table-input" placeholder="0.00" step="0.01">
+                </td>
+                <td>
+                    <input type="number" id="productQty_${itemCount}" name="productQty" 
+                           class="table-input" placeholder="1" value="1" min="1">
+                </td>
+                <td>
+                    <input type="number" id="productTotal_${itemCount}" name="productTotal" 
+                           class="table-input" placeholder="0.00" readonly> 
+                </td>
+                <td>
+                    <button type="button" class="btn-remove remove-item-btn">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+        $('#invoiceItemsmain').append(newRow);
+        $(`#productSearch_${itemCount}`).autocomplete({
             source: '{{ url_for("search_products") }}',
             minLength: 2,
             select: function(event, ui) {
-                const rowId = $(this).attr('id').split('_')[1];
-                $(`#productId_${rowId}`).val(ui.item.id);
-                $(`#productDescription_${rowId}`).val(ui.item.description);
-                $(`#productUnitPri_${rowId}`).val(ui.item.unit_price);
-                updateTotal(rowId);
+                $(`#productId_${itemCount}`).val(ui.item.id);
+                $(`#productDescription_${itemCount}`).val(ui.item.description);
+                $(`#productUnitPri_${itemCount}`).val(ui.item.unit_price);
+                updateTotal(itemCount);
             }
         });
-
-        // Add new item row
-        let itemCount = 1;
-        $('.add-item-btn').click(function() {
-            itemCount++;
-            const newRow = `
-                <tr id="row_${itemCount}">
-                    <td>
-                        <input type="text" id="productSearch_${itemCount}" name="productSearch" 
-                               class="table-input productSearch" placeholder="Search products...">
-                        <input type="hidden" id="productId_${itemCount}" name="productId" value="">
-                    </td>
-                    <td>
-                        <input type="text" id="productDescription_${itemCount}" name="productDescription" 
-                               class="table-input" placeholder="Description..." readonly>
-                    </td>
-                    <td>
-                        <input type="number" id="productUnitPri_${itemCount}" name="productUnitPri" 
-                               class="table-input" placeholder="0.00" step="0.01">
-                    </td>
-                    <td>
-                        <input type="number" id="productQty_${itemCount}" name="productQty" 
-                               class="table-input" placeholder="1" value="1" min="1">
-                    </td>
-                    <td>
-                        <input type="number" id="productTotal_${itemCount}" name="productTotal" 
-                               class="table-input" placeholder="0.00" readonly> 
-                    </td>
-                    <td>
-                        <button type="button" class="btn-remove remove-item-btn">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-            `;
-            $('#invoiceItemsmain').append(newRow);
-            $(`#productSearch_${itemCount}`).autocomplete({
-                source: '{{ url_for("search_products") }}',
-                minLength: 2,
-                select: function(event, ui) {
-                    $(`#productId_${itemCount}`).val(ui.item.id);
-                    $(`#productDescription_${itemCount}`).val(ui.item.description);
-                    $(`#productUnitPri_${itemCount}`).val(ui.item.unit_price);
-                    updateTotal(itemCount);
-                }
-            });
-            $(`#productUnitPri_${itemCount}`).on('input', function() {
-                updateTotal(itemCount);
-            });
-            $(`#productQty_${itemCount}`).on('input', function() {
-                updateTotal(itemCount);
-            });
-            $('.remove-item-btn').off('click').on('click', function() {
-                $(this).closest('tr').remove();
-                updateInvoicePreview();
-            });
-            updateInvoicePreview();
+        $(`#productUnitPri_${itemCount}`).on('input', function() {
+            updateTotal(itemCount);
         });
-        // Remove item row
-        $('.remove-item-btn').on('click', function() {
+        $(`#productQty_${itemCount}`).on('input', function() {
+            updateTotal(itemCount);
+        });
+        $('.remove-item-btn').off('click').on('click', function() {
             $(this).closest('tr').remove();
             updateInvoicePreview();
         });
-        // Update total for a specific row
-        function updateTotal(rowId) {
+        updateInvoicePreview();
+    });
+    // Remove item row
+    $('.remove-item-btn').on('click', function() {
+        $(this).closest('tr').remove();
+        updateInvoicePreview();
+    });
+    // Update total for a specific row
+    function updateTotal(rowId) {
+        const unitPrice = parseFloat($(`#productUnitPri_${rowId}`).val()) || 0;
+        const quantity = parseInt($(`#productQty_${rowId}`).val()) || 1;
+        const total = (unitPrice * quantity).toFixed(2);
+        $(`#productTotal_${rowId}`).val(total);
+        updateInvoicePreview();
+    }
+    // Update form submission
+    $('#invoiceForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        // Gather all invoice items
+        const items = [];
+        $('#invoiceItemsmain tr').each(function() {
+            const rowId = $(this).attr('id').split('_')[1];
+            const productId = $(`#productId_${rowId}`).val();
+            if (productId) {
+                items.push({
+                    product_id: productId,
+                    quantity: parseInt($(`#productQty_${rowId}`).val()) || 1,
+                    unit_price: parseFloat($(`#productUnitPri_${rowId}`).val()) || 0,
+                    total: parseFloat($(`#productTotal_${rowId}`).val()) || 0
+                });
+            }
+        });
+
+        // Create invoice data object
+        const invoiceData = {
+            // client_id: $('#customerId').val(),
+            client_id : parseInt($('#customerId').val()),
+            enterprise_id: $('#enterpriseId').val() || 0,
+            creation_date: $('#creationDate').val(),
+            due_date: $('#paidDate').val(),
+            partial_amount: $('#Partial_amount').val() || 0,
+            special_invoice_no: $('#specialNo').val(),
+            description: $('#Notes').val(),
+            tax: parseFloat($('#Tax').val()) || 20,
+            payment_method: $('#Payment_method').val(),
+            invoice_items: items
+        };
+
+        // Send POST request
+        fetch('{{ url_for("create_invoice") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify(invoiceData)
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => Promise.reject(err));
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Success - redirect to invoices list
+            // window.location.href = '{{ url_for("read_invoices") }}';
+        Swal.fire({
+            title: 'Invoice Created!',
+            text: 'What would you like to do next?',
+            icon: 'success',
+            showCancelButton: true,
+            confirmButtonText: 'Create Another Invoice',
+            cancelButtonText: 'View Invoices'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Reset the form for a new invoice
+                document.getElementById('invoiceForm').reset();
+                // Remove all item rows except the first
+                $('#invoiceItemsmain tr:not(:first)').remove();
+                // Clear the first row's inputs
+                $('#productSearch_0, #productId_0, #productDescription_0, #productUnitPri_0, #productQty_0, #productTotal_0').val('');
+                // Reset preview
+                $('input, select').trigger('change');
+            } else if (result.dismiss === Swal.DismissReason.cancel) {
+                // Redirect to invoices list
+                window.location.href = '{{ url_for("read_invoices") }}';
+            }
+        });
+        })
+        .catch(error => {
+            // Show error message
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.detail || 'Failed to create invoice'
+            });
+        });
+    });
+
+    // Update invoice preview
+    function updateInvoicePreview() {
+        let totalAmount = 0;
+        let itemsHtml = '';
+        let subtotal = 0;
+        
+        $('#invoiceItemsmain tr').each(function() {
+            const rowId = $(this).attr('id').split('_')[1];
+            const description = $(`#productDescription_${rowId}`).val();
             const unitPrice = parseFloat($(`#productUnitPri_${rowId}`).val()) || 0;
             const quantity = parseInt($(`#productQty_${rowId}`).val()) || 1;
-            const total = (unitPrice * quantity).toFixed(2);
-            $(`#productTotal_${rowId}`).val(total);
-            updateInvoicePreview();
-        }
-        // Update invoice preview
-        function updateInvoicePreview() {
-            let totalAmount = 0;
-            let itemsHtml = '';
-            $('#invoiceItemsmain tr').each(function() {
-                const rowId = $(this).attr('id').split('_')[1];
-                const description = $(`#productDescription_${rowId}`).val();
-                const unitPrice = parseFloat($(`#productUnitPri_${rowId}`).val()) || 0;
-                const quantity = parseInt($(`#productQty_${rowId}`).val()) || 1;
-                const total = parseFloat($(`#productTotal_${rowId}`).val()) || 0;
+            const total = unitPrice * quantity;
 
-                if (description && unitPrice > 0 && quantity > 0) {
-                    itemsHtml += `
-                        <tr>
-                            <td>${description}</td>
-                            <td class="text-center">€${unitPrice.toFixed(2)}</td>
-                            <td class="text-right">€${total.toFixed(2)}</td>
-                        </tr>
-                    `;
-                    totalAmount += total;
-                }
-            });
-            if (itemsHtml === '') {
-                itemsHtml = `
+            if (description && unitPrice > 0) {
+                itemsHtml += `
                     <tr>
-                        <td colspan="3" class="text-center" style="padding: 2rem; color: var(--text-secondary);">
-                            <i class="fas fa-inbox fa-2x"></i><br><br>
-                            Add items to see preview
-                        </td>
+                        <td>${description}</td>
+                        <td class="text-center">€${unitPrice.toFixed(2)} × ${quantity}</td>
+                        <td class="text-right">€${total.toFixed(2)}</td>
+                    </tr>
+                `;
+                subtotal += total;
+            }
+        });
+
+        // Add subtotal, tax and total rows
+        const taxRate = parseFloat($('#Tax').val()) || 20;
+        const taxAmount = (subtotal * taxRate) / 100;
+        totalAmount = subtotal + taxAmount;
+        const partialAmount = parseFloat($('#Partial_amount').val()) || 0;
+        const remainingAmount = totalAmount - partialAmount;
+
+        if (itemsHtml) {
+            itemsHtml += `
+                <tr class="total-row">
+                    <td colspan="2">Subtotal</td>
+                    <td class="text-right">€${subtotal.toFixed(2)}</td>
+                </tr>
+                <tr class="total-row">
+                    <td colspan="2">Tax (${taxRate}%)</td>
+                    <td class="text-right">€${taxAmount.toFixed(2)}</td>
+                </tr>
+                <tr class="total-row">
+                    <td colspan="2">Total Amount</td>
+                    <td class="text-right">€${totalAmount.toFixed(2)}</td>
+                </tr>
+            `;
+            if (partialAmount > 0) {
+                itemsHtml += `
+                    <tr class="total-row">
+                        <td colspan="2">Partial Payment</td>
+                        <td class="text-right">€${partialAmount.toFixed(2)}</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td colspan="2">Remaining Balance</td>
+                        <td class="text-right">€${remainingAmount.toFixed(2)}</td>
                     </tr>
                 `;
             }
-            $('#invoice_preview').html(itemsHtml);
-            $('#totalAmountPreview').text(`€${totalAmount.toFixed(2)}`);
-            $('#paymentMethodPreview').text($('#Payment_method').val() || 'Not selected');
-            $('#dueDatePreview').text($('#paidDate').val() || today);
-            $('#taxRatePreview').text(`${$('#Tax').val() || '20'}%`);
-            $('#partialAmountPreview').text(`€${$('#Partial_amount').val() || '0.00'}`);
-            $('#customerPreview').html(`
-                <div><strong>${$('#customerSearch').val()}</strong></div>
-                <div>${$('#customerEmail').val()}</div>
-            `);
+        } else {
+            itemsHtml = `
+                <tr>
+                    <td colspan="3" class="text-center" style="padding: 2rem; color: var(--text-secondary);">
+                        <i class="fas fa-inbox fa-2x"></i><br><br>
+                        Add items to see preview
+                    </td>
+                </tr>
+            `;
         }
-        // Update preview on input changes
-        $('#invoiceForm input, #invoiceForm select').on('input change', function() {
-            updateInvoicePreview();
-        });
-        // Initial preview update
-        updateInvoicePreview();
-        // Set initial customer preview
+
+        $('#invoice_preview').html(itemsHtml);
+        updatePaymentInfo();
+    }
+
+    function updatePaymentInfo() {
+        $('#paymentMethodPreview').text($('#Payment_method').val() || 'Not selected');
+        $('#dueDatePreview').text($('#paidDate').val() || today);
+        $('#taxRatePreview').text(`${$('#Tax').val() || '20'}%`);
+        $('#partialAmountPreview').text(`€${$('#Partial_amount').val() || '0.00'}`);
+        
         if ($('#customerSearch').val()) {
             $('#customerPreview').html(`
                 <div><strong>${$('#customerSearch').val()}</strong></div>
                 <div>${$('#customerEmail').val()}</div>
             `);
         }
-    });
+    }
+
+    // Bind events to update preview
+    $('input, select').on('change input', updateInvoicePreview);
+    
+    // Initial preview update
+    updateInvoicePreview();
+});
 </script>
 {% endblock %}
 
-                
+

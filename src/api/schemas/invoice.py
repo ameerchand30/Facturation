@@ -46,6 +46,7 @@ class InvoiceBase(BaseModel):
     description: Optional[str] = None
     tax: Optional[float] = None
     payment_method: PaymentMethodEnum
+    tax : Optional[float] = None
 
 class InvoiceCreate(InvoiceBase):
     invoice_items: List[InvoiceItemCreate]
