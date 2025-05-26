@@ -1,0 +1,523 @@
+{% extends "layout/base.html" %}
+
+{% block title %} Invoice #{{ invoice.id }} {% endblock %}
+
+{% block page_css %}
+<link rel="stylesheet" href="{{ url_for('static', path='/css/facture.css') }}">
+<style>
+    /* Global styles and variables for consistency */
+    :root {
+        --invoice-bg: #f9fbfd; /* Light background for the overall page */
+        --card-bg: #ffffff; /* White background for the invoice card */
+        --text-dark: #212529; /* Dark text for headings */
+        --text-medium: #495057; /* Medium dark text for body */
+        --text-light: #6c757d; /* Lighter text for minor details */
+        --border-color: #e9ecef; /* Light border color */
+        --accent-color: var(--primary); /* Primary color from base.html */
+        --accent-dark: var(--primary-dark); /* Darker primary color */
+        --shadow-light: rgba(0, 0, 0, 0.05);
+        --shadow-medium: rgba(0, 0, 0, 0.1);
+        --spacing-md: 1.5rem;
+        --spacing-lg: 2.5rem;
+    }
+
+    body {
+        font-family: 'Inter', sans-serif;
+        color: var(--text-medium);
+        background-color: var(--invoice-bg);
+        line-height: 1.6;
+    }
+
+    /* Invoice Container Styling */
+    .invoice-container {
+        background-color: var(--card-bg);
+        box-shadow: 0 10px 40px var(--shadow-light); /* More pronounced, soft shadow */
+        padding: 50px 60px; /* Generous padding */
+        margin: 50px auto; /* Center with margin */
+        border-radius: 15px; /* Softer rounded corners */
+        max-width: 950px; /* Slightly wider for more content */
+        position: relative; /* For potential absolute elements */
+        overflow: hidden; /* Ensures shadows/borders are contained */
+    }
+
+    /* Header Section */
+    .invoice-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start; /* Align items to the top */
+        padding-bottom: var(--spacing-lg);
+        margin-bottom: var(--spacing-lg);
+        border-bottom: 2px solid var(--border-color); /* Clean separator */
+        position: relative;
+    }
+
+    .invoice-header::after { /* Decorative line */
+        content: '';
+        position: absolute;
+        bottom: -2px; /* Align with border */
+        left: 0;
+        width: 100px; /* Short accent line */
+        height: 2px;
+        background-color: var(--accent-color);
+    }
+
+    .invoice-title h2 {
+        color: var(--text-dark);
+        font-weight: 800; /* Extra bold */
+        font-size: 2.5rem; /* Larger and impactful */
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .invoice-title h2 i {
+        color: var(--accent-color);
+        margin-right: 15px;
+        font-size: 2rem;
+    }
+
+    .invoice-title h3 {
+        font-size: 1.15rem;
+        color: var(--text-light);
+        font-weight: 500;
+        margin-top: 0;
+        text-align: right; /* Align date to the right */
+        padding-top: 10px; /* Space between invoice number and date */
+    }
+
+    .invoice-title h3 i {
+        margin-right: 10px;
+        color: var(--accent-color);
+    }
+
+    /* Company and Client Details */
+    .company-details {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: var(--spacing-lg);
+        flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    }
+
+    .company-details > div {
+        flex: 1;
+        min-width: 280px; /* Minimum width for each column before wrapping */
+        margin-bottom: var(--spacing-md);
+    }
+
+    .company-details .col-xs-6:first-child {
+        text-align: left;
+    }
+
+    .company-details .col-xs-6:last-child {
+        text-align: right;
+    }
+
+    .company-logo {
+        margin-bottom: var(--spacing-md);
+        display: flex; /* For centering or alignment */
+        justify-content: flex-start; /* Align logo to left */
+    }
+
+    .company-logo img {
+        max-height: 90px; /* Slightly smaller logo */
+        width: auto;
+        border-radius: 8px; /* Slight roundness for logo container */
+    }
+
+    .default-logo {
+        width: 90px;
+        height: 90px;
+        background-color: #f0f2f5;
+        border-radius: 8px;
+        color: var(--text-light);
+        font-size: 2.5rem;
+    }
+
+    .company-name {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 0.5rem;
+    }
+
+    address.company-address {
+        font-style: normal; /* Remove italic */
+        line-height: 1.8;
+        color: var(--text-medium);
+        font-size: 0.95rem;
+    }
+
+    address.company-address i {
+        width: 25px;
+        color: var(--accent-color);
+        margin-right: 8px;
+        text-align: center; /* Center icons */
+    }
+
+    /* Items Table Section */
+    .panel-default {
+        border: none;
+        box-shadow: 0 5px 20px var(--shadow-light);
+        border-radius: 12px;
+        overflow: hidden; /* Ensures border-radius applies to children */
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .panel-heading {
+        background: linear-gradient(to right, var(--accent-color), var(--accent-dark)); /* Gradient heading */
+        color: white !important;
+        padding: 20px var(--spacing-md);
+        font-size: 1.3rem;
+        font-weight: 600;
+        border-bottom: none;
+    }
+
+    .panel-title i {
+        margin-right: 12px;
+        font-size: 1.2rem;
+    }
+
+    .panel-body {
+        padding: 0; /* Remove default padding as table cells have their own */
+    }
+
+    .table {
+        width: 100%;
+        margin-bottom: 0;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .table thead tr {
+        background-color: #f8f9fa; /* Light header background */
+        border-bottom: 2px solid var(--accent-color); /* Accent line under header */
+    }
+
+    .table th, .table td {
+        padding: 18px var(--spacing-md); /* More padding for cells */
+        vertical-align: middle;
+        border-top: 1px solid var(--border-color); /* Light border between rows */
+        text-align: left;
+    }
+
+    .table thead th, .table thead td {
+        font-weight: 700;
+        color: var(--text-dark);
+        text-transform: uppercase;
+        font-size: 0.9rem;
+        border-bottom: 2px solid var(--accent-color);
+    }
+
+    .table tbody tr:first-child td {
+        border-top: none; /* No top border for the first row */
+    }
+    
+    .table tbody td {
+        color: var(--text-medium);
+        font-size: 0.95rem;
+    }
+
+    .table .amount {
+        text-align: right;
+        font-weight: 500;
+        color: var(--text-dark);
+    }
+
+    .total-row td {
+        font-size: 1.1rem;
+        font-weight: 600;
+        padding-top: var(--spacing-md);
+        padding-bottom: var(--spacing-md);
+    }
+
+    .total-row .thick-line {
+        border-top: 2px solid var(--border-color);
+        padding-top: 20px;
+    }
+
+    .total-row .no-line {
+        border-top: none;
+    }
+
+    .total-row .text-center {
+        text-align: right !important; /* Force right alignment for labels */
+        padding-right: 20px; /* Space from total amount */
+    }
+
+    .total-row .amount {
+        font-size: 1.3rem; /* Larger total amounts */
+        color: var(--accent-dark);
+        font-weight: 700;
+        padding-right: var(--spacing-md);
+    }
+
+    /* Payment Information */
+    .payment-info {
+        margin-top: var(--spacing-lg);
+        padding-top: var(--spacing-md);
+        border-top: 1px dashed var(--border-color); /* Subtle dashed separator */
+    }
+
+    .payment-info h4 {
+        color: var(--text-dark);
+        font-weight: 600;
+        margin-bottom: var(--spacing-md);
+        display: flex;
+        align-items: center;
+    }
+
+    .payment-info h4 i {
+        color: var(--accent-color);
+        margin-right: 10px;
+        font-size: 1.2rem;
+    }
+
+    .payment-info strong {
+        color: var(--text-dark);
+    }
+
+    .payment-info .col-xs-6 {
+        font-size: 0.95rem;
+        line-height: 1.7;
+    }
+
+    /* Footer / Meta Info */
+    .invoice-meta {
+        margin-top: var(--spacing-lg);
+        padding-top: var(--spacing-md);
+        border-top: 1px solid var(--border-color);
+        color: var(--text-light);
+        font-size: 0.85rem;
+        text-align: center;
+    }
+
+    /* PDF Download Button */
+    .download-button-container {
+        text-align: center;
+        margin-top: var(--spacing-lg);
+        margin-bottom: var(--spacing-lg);
+    }
+    
+    .btn-primary {
+        background-color: var(--accent-color);
+        border-color: var(--accent-color);
+        transition: all 0.3s ease;
+        padding: 12px 30px;
+        border-radius: 8px; /* More rounded button */
+        font-size: 1.1rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        box-shadow: 0 5px 15px rgba(var(--accent-color-rgb), 0.25);
+    }
+
+    .btn-primary:hover {
+        background-color: var(--accent-dark);
+        border-color: var(--accent-dark);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(var(--accent-color-rgb), 0.35);
+    }
+
+    .btn-primary i {
+        margin-right: 10px;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .invoice-container {
+            padding: 30px;
+            margin: 30px auto;
+        }
+
+        .invoice-header {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .invoice-title h2, .invoice-title h3 {
+            text-align: center;
+            width: 100%;
+        }
+        
+        .invoice-title h2 {
+            font-size: 2rem;
+            justify-content: center;
+        }
+
+        .company-details {
+            flex-direction: column;
+            text-align: center;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .company-details > div {
+            min-width: unset;
+            width: 100%;
+        }
+
+        .company-logo {
+            justify-content: center; /* Center logo on small screens */
+        }
+
+        .company-details .col-xs-6:first-child,
+        .company-details .col-xs-6:last-child {
+            text-align: center;
+        }
+
+        .table th, .table td {
+            padding: 12px 15px;
+        }
+
+        .total-row .text-center {
+            text-align: left !important;
+        }
+    }
+
+</style>
+{% endblock %}
+
+{% block content %}
+
+{% if not pdf_mode %}
+<div class="download-button-container">
+    <a href="{{ url_for('generate_pdf', invoice_id=invoice.id) }}" class="btn btn-primary">
+        <i class="fas fa-file-pdf"></i> Download PDF
+    </a>
+</div>
+{% endif %}
+
+<div class="container" id ="pdf-container">
+    <div class="invoice-container">
+        <div class="invoice-header">
+            <div class="invoice-title">
+                <h2>
+                    <i class="fas fa-receipt"></i> FACTURE N0 {{ invoice.id }}
+                </h2>
+            </div>
+            <div class="invoice-date-info">
+                <h3>
+                    <i class="fas fa-calendar-alt"></i> {{ invoice.creation_date.strftime('%Y-%m-%d') }}
+                </h3>
+            </div>
+        </div>
+        
+        <div class="row company-details">
+            <div class="col-xs-6">
+                <div class="company-logo">
+                    {% if enterprise_profile.logo %}
+                        <img src="{{ url_for('static', path='img/enterprise_profile_images/' + enterprise_profile.logo) }}" 
+                            alt="{{ enterprise_profile.company_name }}" 
+                            class="img-fluid">
+                    {% else %}
+                        <div class="default-logo d-flex align-items-center justify-content-center">
+                            <i class="fa fa-building"></i>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="company-name">{{ enterprise_profile.company_name }}</div>
+                <address class="company-address">
+                    {% if enterprise_profile.name %}
+                        <i class="fa fa-user"></i> {{ enterprise_profile.name }}<br>
+                    {% endif %}
+                    
+                    {% if enterprise_profile.address %}
+                        <i class="fa fa-map-marker"></i> {{ enterprise_profile.address }}<br>
+                        {{ enterprise_profile.postal_code }} {{ enterprise_profile.city }}<br>
+                    {% endif %}
+                    
+                    {% if enterprise_profile.registration_number %}
+                        <i class="fa fa-building"></i> RCS : {{ enterprise_profile.registration_number }}<br>
+                    {% endif %}
+                    
+                    {% if enterprise_profile.phone %}
+                        <i class="fa fa-phone"></i> Tel : {{ enterprise_profile.phone }}<br>
+                    {% endif %}
+                    
+                    {% if enterprise_profile.email %}
+                        <i class="fa fa-envelope"></i> {{ enterprise_profile.email }}<br>
+                    {% endif %}
+                    
+                    {% if enterprise_profile.website %}
+                        <i class="fa fa-globe"></i> {{ enterprise_profile.website }}
+                    {% endif %}
+                </address>
+            </div>
+            <div class="col-xs-6 text-right">
+                <div class="company-name">Factur {{ invoice.special_invoice_no }}:</div>
+                <address >
+                    <strong>{{ invoice.enterprises.name }}</strong><br>
+                    {{ invoice.enterprises.address }}<br>
+                    {{ invoice.enterprises.postalCode }} &nbsp; {{ invoice.enterprises.city }}
+                </address>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">
+                            <i class="fas fa-clipboard-list"></i> Detail de la prestation
+                        </h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th><strong>Désignation du produit</strong></th>
+                                        <td class="text-center"><strong>Prix unitaire H.T</strong></td>
+                                        <td class="text-right"><strong>Total H.T</strong></td>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in invoice.invoice_items %}
+                                    <tr>
+                                        <td>{{ item.product.name }}</td>
+                                        <td class="text-center amount"> {{item.unit_price}} * {{item.quantity}} €</td>
+                                        <td class="text-right amount">{{item.unit_price * item.quantity}} €</td>
+                                    </tr>
+                                    {% endfor %}
+                                    <tr class="total-row">
+                                        <td class="thick-line"></td>
+                                        <td class="thick-line text-center"><strong>Total H.T</strong></td>
+                                        <td class="thick-line text-right amount">{{ "%.2f"|format(total_ht) }} €</td>
+                                    </tr>
+                                    <tr class="total-row">
+                                        <td class="no-line"></td>
+                                        <td class="no-line text-center"><strong>T.V.A 20%</strong></td>
+                                        <td class="no-line text-right amount">{{ "%.2f"|format(tva) }} €</td>
+                                    </tr>
+                                    <tr class="total-row">
+                                        <td class="no-line"></td>
+                                        <td class="no-line text-center"><strong>Total T.T.C</strong></td>
+                                        <td class="no-line text-right amount"><strong>{{ "%.2f"|format(total_ttc) }} €</strong></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="payment-info">
+            <h4><i class="fas fa-money-check-alt"></i> Informations de paiement</h4>
+            <div class="row">
+                <div class="col-xs-6">
+                    <strong>Mode de reglement:</strong> {{ invoice.payment_method.value if invoice.payment_method else '' }}<br>
+                    <strong>Date de reglement:</strong> {{invoice.due_date.strftime('%Y-%m-%d')}}
+                </div>
+            </div>
+        </div>
+        
+        <div class="invoice-meta text-center">
+            <small>Cette facture a été générée électroniquement et est valide sans signature.</small>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% endblock %}
