@@ -216,15 +216,18 @@
                 <!-- Customer Search Section -->
                 <div class="form-group">
                     <label for="customerSearch" class="form-label">
-                        <i class="fas fa-search"></i> Search Customer
+                        <i class="fas fa-search"></i> Select Customer
                     </label>
                     <input type="text" 
                            id="customerSearch" 
                            name="customerSearch" 
                            class="form-control-modern" 
-                           placeholder="Start typing customer name..."
-                           value="{{ enterprise.customer_name if enterprise else '' }}">
-                    <input type="hidden" id="customerId" name="customer_id" value="{{ enterprise.customer_id if enterprise else '' }}">
+                           placeholder="Search for a customer..."
+                           value="{{ enterprise.client.name if enterprise else '' }}">
+                    <input type="hidden" 
+                           id="customerId" 
+                           name="client_id" 
+                           value="{{ enterprise.client_id if enterprise else '' }}">
                 </div>
 
                 <!-- Customer Details Row -->
@@ -235,10 +238,9 @@
                         </label>
                         <input type="email" 
                                id="customerEmail" 
-                               name="customer_email" 
+                               name="customerEmail" 
                                class="form-control-modern" 
-                               placeholder="customer@example.com"
-                               value="{{ enterprise.customer_email if enterprise else '' }}"
+                               value="{{ enterprise.client.email if enterprise else '' }}"
                                readonly>
                     </div>
 
@@ -248,77 +250,85 @@
                         </label>
                         <input type="text" 
                                id="enterpriseName" 
-                               name="enterprise_name" 
+                               name="name" 
                                class="form-control-modern" 
-                               placeholder="Enter enterprise name"
                                value="{{ enterprise.name if enterprise else '' }}"
                                required>
                     </div>
                 </div>
 
-                <!-- Additional Enterprise Fields -->
+                <!-- Address Information -->
                 <div class="form-row">
                     <div class="form-group">
                         <label for="enterpriseAddress" class="form-label">
                             <i class="fas fa-map-marker-alt"></i> Address
                         </label>
-                        <textarea id="enterpriseAddress" 
-                                  name="enterprise_address" 
-                                  class="form-control-modern" 
-                                  placeholder="Enter enterprise address"
-                                  rows="3">{{ enterprise.address if enterprise else '' }}</textarea>
+                        <input type="text" 
+                               id="enterpriseAddress" 
+                               name="address" 
+                               class="form-control-modern" 
+                               value="{{ enterprise.address if enterprise else '' }}">
                     </div>
 
                     <div class="form-group">
-                        <label for="enterprisePhone" class="form-label">
-                            <i class="fas fa-phone"></i> Phone Number
+                        <label for="enterpriseCity" class="form-label">
+                            <i class="fas fa-city"></i> City
                         </label>
-                        <input type="tel" 
-                               id="enterprisePhone" 
-                               name="enterprise_phone" 
+                        <input type="text" 
+                               id="enterpriseCity" 
+                               name="city" 
                                class="form-control-modern" 
-                               placeholder="+1 (555) 123-4567"
-                               value="{{ enterprise.phone if enterprise else '' }}">
+                               value="{{ enterprise.city if enterprise else '' }}">
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="enterpriseWebsite" class="form-label">
-                            <i class="fas fa-globe"></i> Website
+                        <label for="enterprisePostalCode" class="form-label">
+                            <i class="fas fa-mail-bulk"></i> Postal Code
                         </label>
-                        <input type="url" 
-                               id="enterpriseWebsite" 
-                               name="enterprise_website" 
+                        <input type="text" 
+                               id="enterprisePostalCode" 
+                               name="postalCode" 
                                class="form-control-modern" 
-                               placeholder="https://www.example.com"
-                               value="{{ enterprise.website if enterprise else '' }}">
+                               value="{{ enterprise.postalCode if enterprise else '' }}">
                     </div>
 
                     <div class="form-group">
-                        <label for="enterpriseStatus" class="form-label">
-                            <i class="fas fa-toggle-on"></i> Status
+                        <label for="enterpriseState" class="form-label">
+                            <i class="fas fa-map"></i> State/Province
                         </label>
-                        <select id="enterpriseStatus" 
-                                name="enterprise_status" 
-                                class="form-control-modern">
-                            <option value="active" {{ 'selected' if enterprise and enterprise.status == 'active' else '' }}>Active</option>
-                            <option value="inactive" {{ 'selected' if enterprise and enterprise.status == 'inactive' else '' }}>Inactive</option>
-                            <option value="pending" {{ 'selected' if enterprise and enterprise.status == 'pending' else '' }}>Pending</option>
-                        </select>
+                        <input type="text" 
+                               id="enterpriseState" 
+                               name="state" 
+                               class="form-control-modern" 
+                               value="{{ enterprise.state if enterprise else '' }}">
                     </div>
                 </div>
 
-                <!-- Description -->
+                <!-- Business Information -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="siretNo" class="form-label">
+                            <i class="fas fa-id-card"></i> Siret No
+                        </label>
+                        <input type="text" 
+                               id="siretNo" 
+                               name="siretNo" 
+                               class="form-control-modern" 
+                               value="{{ enterprise.siretNo if enterprise else '' }}">
+                    </div>
+                </div>
+
+                <!-- Notes -->
                 <div class="form-group">
-                    <label for="enterpriseDescription" class="form-label">
-                        <i class="fas fa-file-alt"></i> Description
+                    <label for="notes" class="form-label">
+                        <i class="fas fa-sticky-note"></i> Notes
                     </label>
-                    <textarea id="enterpriseDescription" 
-                              name="enterprise_description" 
+                    <textarea id="notes" 
+                              name="notes" 
                               class="form-control-modern" 
-                              placeholder="Enter enterprise description..."
-                              rows="4">{{ enterprise.description if enterprise else '' }}</textarea>
+                              rows="4">{{ enterprise.notes if enterprise else '' }}</textarea>
                 </div>
             </div>
         </form>
