@@ -11,11 +11,6 @@ from src.api.dependencies.auth import get_current_user, require_user_type
 from src.api.models.public.user import UserType
 
 
-
-from fastapi_csrf_protect import CsrfProtect
-from fastapi_csrf_protect.exceptions import CsrfProtectError
-from src.CSRF.csrf_service import CsrfService
-
 from src.core.shared import templates
 
 # to add client with enterprise profile
@@ -103,14 +98,6 @@ async def read_clients(
             }
         )
 
-        # Generate CSRF token
-        try:
-            csrf_token = CsrfService.generate_csrf_token_for_form(response)
-            response.context["csrf_token"] = csrf_token
-        except Exception as csrf_error:
-            print(f"CSRF Error: {csrf_error}")
-            pass
-
         return response
 
     except Exception as e:
@@ -132,7 +119,6 @@ async def add_client_form(
     db: Session = Depends(get_db),
     user: dict = Depends(require_user_type(UserType.ENTERPRISE)),
     enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile)
-    # csrf_protect: CsrfProtect = Depends()
 ):
 # Check if user is unauthorized
     if isinstance(user, (RedirectResponse, JSONResponse)):
@@ -142,24 +128,18 @@ async def add_client_form(
         )
 
     try:
-        # Initialize CSRF protection with settings
-        # csrf_token =  csrf_protect.generate_csrf()
         
         response = templates.TemplateResponse(
             "pages/addClient.html",
             {
                 "request": request,
-                # "csrf_token": csrf_token,
                 "client": None,
                 "current_page": "add_client",
                 "user": user,
                 "enterprise_id": enterprise_profile.id
             }
         )
-        # Set the CSRF token in an HttpOnly cookie
-        # csrf_protect.set_csrf_cookie(csrf_token, response) 
         return response
-    # Handle CSRF errors
     except Exception as e:
         print(f"Error rendering add client form: {e}")
         return templates.TemplateResponse(
@@ -181,7 +161,7 @@ async def edit_client_form(
     db: Session = Depends(get_db),
     user: dict = Depends(require_user_type(UserType.ENTERPRISE)),
     enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile)
-    # csrf_protect: CsrfProtect = Depends()
+    
 ):
     # Check if user is unauthorized
     if isinstance(user, (RedirectResponse, JSONResponse)):
@@ -208,9 +188,6 @@ async def edit_client_form(
                 status_code=404
             )
 
-        # Generate CSRF token
-        # csrf_token = csrf_protect.generate_csrf()
-        
         # Create response with template
         response = templates.TemplateResponse(
             "pages/addClient.html",
@@ -219,13 +196,8 @@ async def edit_client_form(
                 "client": client,
                 "current_page": "edit_client",
                 "user": user,
-                #"enterprise_id": enterprise_profile.id,
-                # "csrf_token": csrf_token
             }
         )
-        
-        # Set CSRF cookie
-        # csrf_protect.set_csrf_cookie(csrf_token, response)
         return response
 
     except Exception as e:
@@ -272,7 +244,7 @@ async def update_client(
     db: Session = Depends(get_db),
     user: dict = Depends(require_user_type(UserType.ENTERPRISE)),
     enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile)
-    # csrf_protect: CsrfProtect = Depends()
+
 ):
 
     # Check if user is unauthorized
@@ -282,9 +254,6 @@ async def update_client(
             status_code=302
         )
     try:
-        # Verify CSRF token
-        # await csrf_protect.validate_csrf(request)
-        
         # Verify client ownership
         existing_client = db.query(Clients).filter(
             Clients.id == client_id
@@ -304,11 +273,6 @@ async def update_client(
         return JSONResponse(
             content={"success": True, "message": "Client updated successfully"}
         )
-    except CsrfProtectError:
-        return JSONResponse(
-            status_code=403,
-            content={"success": False, "message": "CSRF token validation failed"}
-        )
     except Exception as e:
         print(f"Error updating client: {e}")
         db.rollback()
@@ -324,7 +288,7 @@ async def delete_client(
     db: Session = Depends(get_db),
     user: dict = Depends(require_user_type(UserType.ENTERPRISE)),
     enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile)
-    # csrf_protect: CsrfProtect = Depends()
+    
 ):
     # Check if user is unauthorized
     if isinstance(user, (RedirectResponse, JSONResponse)):
@@ -332,10 +296,7 @@ async def delete_client(
             url="/login?error=unauthorized",
             status_code=302
         )
-    try:
-        # Verify CSRF token
-        # await csrf_protect.validate_csrf(request)
-        
+    try:    
         # Delete client with ownership check
         result = db.query(Clients).filter(Clients.id == client_id).delete()
 
@@ -344,16 +305,8 @@ async def delete_client(
                 status_code=404,
                 content={"success": False, "message": "Client not found"}
             )
-            
         db.commit()
-        
         return {"success": True, "message": "Client deleted successfully"}
-        
-    except CsrfProtectError:
-        return JSONResponse(
-            status_code=403,
-            content={"success": False, "message": "CSRF token validation failed"}
-        )
     except Exception as e:
         print(f"Error deleting client: {e}")
         db.rollback()

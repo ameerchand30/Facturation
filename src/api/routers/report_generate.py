@@ -27,7 +27,7 @@ from src.api.utils.auth_utils import check_authorization
 
 report_router = APIRouter(
     prefix="/report",
-    tags=["Reposts"],
+    tags=["Reports"],
     responses={404: {"description": "page Not found"}},
 )
 

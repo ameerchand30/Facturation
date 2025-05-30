@@ -5,7 +5,6 @@ from sqlalchemy.orm import Session, joinedload
 from typing import List,Optional
 from datetime import date
 from src.core.shared import templates
-from src.CSRF.csrf_service import CsrfService
 
 from src.database import get_db
 from src.api.models.client import Clients
@@ -122,13 +121,6 @@ async def read_invoices(
                 "enterprise_id": enterprise_profile.id
             }
         )
-        # Generate CSRF token
-        try:
-            csrf_token = CsrfService.generate_csrf_token_for_form(response)
-            response.context["csrf_token"] = csrf_token
-        except Exception as csrf_error:
-            print(f"CSRF Error: {csrf_error}")
-            pass
         return response
 
     except Exception as e:
