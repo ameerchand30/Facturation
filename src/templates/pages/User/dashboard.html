@@ -1,8 +1,8 @@
-{% extends "pages/User/userComponents/layout.html" %}
+{% extends "pages/User/base.html" %}
 
 {% block title %}Dashboard - Facturaization{% endblock %}
 
-{% block extra_css %}
+{% block page_css %}
 <style>
 :root {
   --primary-color: #3498db;
@@ -333,9 +333,10 @@ body {
 </style>
 <!-- Required CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
+<link rel="stylesheet" href="{{ url_for('static', path='/css/user/landingPage.css') }}">
 {% endblock %}
 
-{% block user_content %}
+{% block content %}
 <div class="dashboard-wrapper">
   <!-- Dashboard Header -->
   <div class="dashboard-header">
@@ -510,7 +511,7 @@ body {
 </div>
 {% endblock %}
 
-{% block extra_js %}
+{% block page_js %}
 <!-- Include Chart.js and daterangepicker -->
 
 <!-- Required JS in correct order -->
