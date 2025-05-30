@@ -3,27 +3,11 @@
 {% block page_css %}
 <style>
     /* Modern color scheme */
-    :root {
-        --primary: #4361ee;
-        --primary-dark: #3a56d4;
-        --secondary: #3f37c9;
-        --light: #f8f9fa;
-        --dark: #2b2d42;
-        --gray: #8d99ae;
-        --success: #4ade80;
-        --danger: #ef4444;
-        --warning: #fb923c;
-        --info: #60a5fa;
-    }
 
-    body {
-        font-family: 'Poppins', sans-serif;
-        background-color: #f5f7fa;
-    }
 
     .login-container {
         max-width: 1000px;
-        margin: 50px auto;
+        margin: 90px auto;
         background-color: transparent;
         border-radius: 16px;
         box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
@@ -80,7 +64,7 @@
         justify-content: center;
         align-items: center;
         position: absolute;
-        top: -40px;
+        top: -15px;
         left: 50%;
         transform: translateX(-50%);
         box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
@@ -511,11 +495,16 @@
         animation: selectedPulse 1.5s infinite;
     }
 </style>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+
 {% endblock %}
 
 {% block content %}
+    
+    
+
     <div class="container">
+
         <div class="login-container">
             <div class="login-card">
                 <div class="login-left">
@@ -571,16 +560,16 @@
                     
                     <div class="oauth-buttons">
                         <button class="btn btn-google" data-provider="google">
-                            <i class="fa fa-google"></i> Continue with Google
+                            <i class="fab fa-google"></i> Continue with Google
                         </button>
                         <button class="btn btn-github" data-provider="github">
-                            <i class="fa fa-github"></i> Continue with GitHub
+                            <i class="fab fa-github"></i> Continue with GitHub
                         </button>
                         <button class="btn btn-linkedin" data-provider="linkedin">
-                            <i class="fa fa-linkedin"></i> Continue with LinkedIn
+                            <i class="fab fa-linkedin"></i> Continue with LinkedIn
                         </button>
                         <button class="btn btn-facebook" data-provider="facebook">
-                            <i class="fa fa-facebook"></i> Continue with Facebook
+                            <i class="fab fa-facebook"></i> Continue with Facebook
                         </button>
                         <div class="divider">or</div>
                         <a href="/auth/signup" class="btn btn-outline">
