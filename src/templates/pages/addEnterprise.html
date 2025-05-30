@@ -379,12 +379,15 @@ $(document).ready(function() {
         
         const formData = new FormData(form[0]);
         const jsonData = Object.fromEntries(formData);
+        const csrfToken = getCSRFToken();
         
         // Submit form
         fetch(form.attr('action'), {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+                'Accept': 'application/json'
             },
             body: JSON.stringify(jsonData)
         })

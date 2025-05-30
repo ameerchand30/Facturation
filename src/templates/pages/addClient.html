@@ -340,9 +340,7 @@
         <!-- Form Content -->
         <div style="padding: 2rem;">
             <form id="clientForm" action="{{ url_for('update_client', client_id=client.id) if client else url_for('create_client') }}" method="post">
-                <!-- CSRF Token -->
-                <input type="hidden" name="csrf_token" value="{{ csrf_token if csrf_token else '' }}">
-
+            
                 <div class="row">
                     <!-- Left Column -->
                     <div class="col-lg-6">
@@ -539,7 +537,24 @@ $('#clientForm').on('submit', function(e) {
     
     const formData = new FormData(form[0]);
     const jsonData = Object.fromEntries(formData);
-    const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+      // Get CSRF token from cookies
+    // const csrfToken = document.cookie
+    //     .split('; ')
+    //     .find(row => row.startsWith('csrftoken='))
+    //     ?.split('=')[1];
+    // if (!csrfToken) {
+    //     Swal.fire({
+    //         icon: 'error',
+    //         title: 'Error',
+    //         text: 'CSRF token is missing',
+    //         background: 'rgba(255, 255, 255, 0.95)',
+    //         backdrop: 'rgba(0, 0, 0, 0.4)',
+    //         confirmButtonColor: '#ef4444'
+    //     });
+    //     return;
+    // }
+    const csrfToken = getCSRFToken();
+
     const isCreate = !form.attr('action').includes('update');
 
     // Remove csrf_token from jsonData as it's sent in header
@@ -549,16 +564,29 @@ $('#clientForm').on('submit', function(e) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-Token': csrfToken,
+            'X-CSRFToken': csrfToken,
             'Accept': 'application/json'
         },
-        credentials: 'same-origin',
+        credentials: 'include',
+        mode: 'same-origin',
+        cache: 'no-cache',
         body: JSON.stringify(jsonData)
     })
     .then(async response => {
-        const data = await response.json();
+        let data;
+        try {
+            if (response.headers.get('Content-Type')?.includes('application/json')) {
+                data = await response.json();
+            } else {
+                data = { message: 'Server returned non-JSON response' };
+            }
+        } catch (error) {
+            console.error('Error parsing response:', error);
+            throw new Error('Failed to parse server response');
+        }
+
         if (!response.ok) {
-            throw new Error(data.message || 'Request failed');
+            throw new Error(data.message || `Request failed with status ${response.status}`);
         }
         return data;
     })

@@ -26,11 +26,9 @@ python-dotenv = "^1.0.0"
 
 # Authentication and Security
 python-jose = {extras = ["cryptography"], version = "^3.4.0"}
-# to login with social media or for openai
-authlib = "^1.5.2" 
+python-jwt = "^4.0.0"  # Use this instead of PyJWT
+authlib = "^1.5.2"
 itsdangerous = "^2.2.0"
-fastapi-jwt-auth = "^0.5.0"
-
 
 # File Handling and Parsing
 python-multipart = "^0.0.20"
@@ -52,7 +50,7 @@ google-api-python-client = "^2.166.0"
 # AI and Visualization
 openai = "^1.72.0"
 plotly = "^6.0.1"
-
+piccolo-api = "^1.5.2"
 
 [build-system]
 requires = ["poetry-core"]

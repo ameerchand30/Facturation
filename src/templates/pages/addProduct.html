@@ -697,13 +697,14 @@
             // Show loading state
             submitBtn.classList.add('loading');
             submitBtn.disabled = true;
+            const csrfToken = getCSRFToken();
 
             // Submit form
             fetch(form.action, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': document.querySelector('input[name="csrf_token"]')?.value || ''
+                    'X-CSRFToken': csrfToken
                 },
                 body: JSON.stringify(jsonData)
             })

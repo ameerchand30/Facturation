@@ -1040,12 +1040,14 @@ document.addEventListener('DOMContentLoaded', function() {
             invoice_items: items
         };
 
+        const csrfToken = getCSRFToken();
+
         // Send POST request
         fetch('{{ url_for("create_invoice") }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token }}'
+                'X-CSRFToken': csrfToken
             },
             body: JSON.stringify(invoiceData)
         })

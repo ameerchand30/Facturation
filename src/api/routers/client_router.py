@@ -217,6 +217,8 @@ async def edit_client_form(
 @client_router.post("/", response_model=dict, name="create_client")
 async def create_client(client: ClientCreate, db: Session = Depends(get_db), user: dict = Depends(require_user_type(UserType.ENTERPRISE)),enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile)):
     
+
+    print("Creating client with data:", client)
     # Check if user is unauthorized
     if isinstance(user, (RedirectResponse, JSONResponse)):
         return RedirectResponse(

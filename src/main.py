@@ -1,13 +1,12 @@
-from fastapi import FastAPI, Request,APIRouter, Depends
+from fastapi import FastAPI, Request, APIRouter, Depends
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 import os
 
-from fastapi_csrf_protect import CsrfProtect
-from fastapi_csrf_protect.exceptions import CsrfProtectError
-
+# Import CSRFMiddleware from piccolo_api
+from piccolo_api.csrf.middleware import CSRFMiddleware
 
 # from routers.invoice_router import invoice_router
 from src.api.routers.auth_router import auth_router
@@ -21,7 +20,7 @@ from src.api.routers.enterprise_profile_router import enterprise_profile_router
 from src.api.routers.client_invoices_router import client_invoices_router
 
 
-from src.database import db_manager,engine
+from src.database import db_manager, engine
 from src.db_config import Base
 
 # models
@@ -31,16 +30,12 @@ from src.core.shared import templates, STATIC_DIR
 
 app = FastAPI()
 
-
-
-
 # Serve static files with absolute path
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 print("FastAPI application is running...")
 
-
-# Create the database tables   
+# Create the database tables
 Base.metadata.create_all(bind=engine)
 
 # Set up CORS middleware (if needed)
@@ -52,23 +47,29 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers
 )
 
-# Add session middleware
-app.add_middleware(SessionMiddleware, secret_key="your-secret-key")
+# Add session middleware (essential for CSRF token storage)
+# Make sure "your-secret-key" is a strong, randomly generated key
+app.add_middleware(SessionMiddleware, secret_key="your-secret-key", session_cookie="session")
+
+# --- Implement Piccolo API CSRF Middleware ---
+# Define allowed hosts for CSRF protection
+# IMPORTANT: In production, replace these with your actual domain(s)
+ALLOWED_CSRF_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    "your-production-domain.com",  # Replace with your production domain
+    # Add your production domains here, e.g., "yourdomain.com", "api.yourdomain.com"
+]
+
+# Add CSRF middleware AFTER SessionMiddleware
+app.add_middleware(CSRFMiddleware, allowed_hosts=ALLOWED_CSRF_HOSTS)
+# --- End CSRF Implementation ---
 
 
 @app.get("/")
 async def root(request: Request):
     return templates.TemplateResponse("pages/User/landing-page.html", {"request": request})
 
-""" # Initialize CSRF protection
-csrf_protect = CsrfProtect()
-csrf_protect.init_app(app)
-# Handle CSRF errors globally
-@app.exception_handler(CsrfProtectError)
-async def csrf_error_handler(request: Request, exc: CsrfProtectError):
-    return templates.TemplateResponse("errors/csrf_error.html", {"request": request, "error": str(exc)})
-# Include CSRF protection in the app
-app.add_middleware(CsrfProtect) """
 # Include routers
 app.include_router(auth_router)
 app.include_router(product_router)
@@ -80,26 +81,6 @@ app.include_router(enterprise_profile_router)
 app.include_router(report_router)
 app.include_router(client_invoices_router)
 
-
-# Include routers
-# app.include_router(auth)
-""" app.include_router(auth_router)
-app.include_router(client_router)
-app.include_router(product_router)
-app.include_router(enterprise_router)
-app.include_router(invoice_router)
-app.include_router(report_router)
-app.include_router(dashboard_router)
-app.include_router(enterprise_profile_router)
-app.include_router(client_invoices_router)
-
-@app.get("/")
-async def root(request: Request):
-    return templates.TemplateResponse("pages/User/LandingPage/landing-page.html", {"request": request})
-
-@app.get("/{full_path:path}")  
-async def catch_all(request: Request, full_path: str):
-    return templates.TemplateResponse("pages/User/LandingPage/landing-page.html", {"request": request}) """
 
 if __name__ == "__main__":
     import uvicorn
