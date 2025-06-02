@@ -19,11 +19,6 @@
   --transition: all 0.3s ease;
 }
 
-body {
-  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  color: var(--text-color);
-  background-color: var(--bg-light);
-}
 
 .dashboard-wrapper {
   padding: 20px;
@@ -337,6 +332,11 @@ body {
 {% endblock %}
 
 {% block content %}
+<div class="page-header">
+  
+</div>
+  <h1>Dashboard</h1>
+  <p class="lead">Your financial overview at a glance</p>
 <div class="dashboard-wrapper">
   <!-- Dashboard Header -->
   <div class="dashboard-header">
@@ -360,9 +360,6 @@ body {
         <div class="form-group">
           <label class="filter-title">Date Range</label>
           <div class="input-group">
-            <span class="input-group-addon filter-icon">
-              <i class="fa fa-calendar"></i>
-            </span>
             <input type="text" class="filter-input" id="daterange" name="daterange" placeholder="Select date range">
           </div>
         </div>

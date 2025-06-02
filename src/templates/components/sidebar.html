@@ -1,9 +1,19 @@
 <nav class="sidebar" id="sidebar">
     <div class="sidebar-header">
-        <div class="logo">CH</div>
+        <div class="user-image-wrapper">
+            <img src="{{ user.picture or url_for('static', path='images/default-profile.png') }}"
+            alt="User Image"
+            class="user-image rounded-circle mb-3 shadow"
+            width="72"
+            height="72"
+            loading="lazy"
+            style="object-fit: cover; border: 2px solid #e0e0e0;">
+        </div>
+      
+       
         <div class="brand-text">
-            <h5 class="mb-0">Chand Invoices</h5>
-            <small>Professional Dashboard</small>
+            <h5 class="mb-1">{{ user.name }}</h5>
+            <small>Enterprise Dashboard</small>
         </div>
     </div>
     
