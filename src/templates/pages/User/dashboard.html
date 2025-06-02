@@ -548,7 +548,7 @@ $(document).ready(function() {
     // Update data
     updateDashboardData(picker.startDate, picker.endDate);
   });
-
+  
   // Handle filter form submission
   $('#filterForm').on('submit', function(e) {
     e.preventDefault();
@@ -909,6 +909,8 @@ function updateTrendIndicator(elementId, growth) {
     // expenditureChart.data.datasets[0].data = periods[period];
     // expenditureChart.update();
   }
+  // Automatically trigger filter form submit on page load
+  $('#filterForm').trigger('submit');
 });
 </script>
 {% endblock %}
