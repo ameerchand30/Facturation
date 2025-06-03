@@ -1,7 +1,7 @@
 <nav class="sidebar" id="sidebar">
     <div class="sidebar-header">
         <div class="user-image-wrapper">
-            <img src="{{ user.picture or url_for('static', path='images/default-profile.png') }}"
+            <img src="{% if user and user.picture %}{{ user.picture }}{% else %}{{ url_for('static', path='images/default-profile.png') }}{% endif %}"
             alt="User Image"
             class="user-image rounded-circle mb-3 shadow"
             width="72"
@@ -12,7 +12,11 @@
       
        
         <div class="brand-text">
-            <h5 class="mb-1">{{ user.name }}</h5>
+            {% if user and user.name %}
+                <h5 class="mb-1">{{ user.name }}</h5>
+            {% else %}
+                <h5 class="mb-1">Default Name</h5>
+            {% endif %}
             <small>Enterprise Dashboard</small>
         </div>
     </div>

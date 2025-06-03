@@ -295,7 +295,7 @@ async def enterprise_analytics(
         InvoiceItem, Invoice.id == InvoiceItem.invoice_id
     ).filter(
         and_(
-            Invoice.enterprise_profile_id == enterprise_profile.id,
+            Invoice.enterprise_profile_id == enterprise_profile_id,
             Invoice.creation_date.between(start_date, end_date)
         )
     ).first()
@@ -311,7 +311,7 @@ async def enterprise_analytics(
         InvoiceItem, Invoice.id == InvoiceItem.invoice_id
     ).filter(
         and_(
-            Invoice.enterprise_profile_id == enterprise_profile.id,
+            Invoice.enterprise_profile_id == enterprise_profile_id,
             Invoice.creation_date.between(start_date, end_date)
         )
     ).group_by(
@@ -358,10 +358,11 @@ async def enterprise_analytics(
 @dashboard_router.get("/enterprise/dashboard", name="enterprise_dashboard")
 async def enterprise_dashboard(
     request: Request,
-    db: Session = Depends(get_db),
-    user: dict = Depends(require_user_type(UserType.ENTERPRISE)),
-    enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile)
+    db: Session = Depends(get_db)
 ) -> Dict[str, Any]:
+
+
+    enterprise_profile_id = 1
     # Get current month and year
     today = datetime.now()
     start_of_month = today.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
@@ -372,13 +373,13 @@ async def enterprise_dashboard(
     ).join(
         Invoice, Invoice.id == InvoiceItem.invoice_id
     ).filter(
-        Invoice.enterprise_profile_id == enterprise_profile.id
+        Invoice.enterprise_profile_id == enterprise_profile_id
     ).scalar() or 0
         
     # Calculate this month's revenue
     current_month_revenue = db.query(func.sum(Invoice.total_amount))\
         .filter(
-            Invoice.enterprise_profile_id == enterprise_profile.id,
+            Invoice.enterprise_profile_id == enterprise_profile_id,
             Invoice.creation_date >= start_of_month
         ).scalar() or 0
     
@@ -387,7 +388,7 @@ async def enterprise_dashboard(
     last_month_start = last_month.replace(day=1)
     last_month_revenue = db.query(func.sum(Invoice.total_amount))\
         .filter(
-            Invoice.enterprise_profile_id == enterprise_profile.id,
+            Invoice.enterprise_profile_id == enterprise_profile_id,
             Invoice.creation_date.between(last_month_start, start_of_month)
         ).scalar() or 0
     
@@ -395,17 +396,17 @@ async def enterprise_dashboard(
     
     # Get total clients count
     total_clients = db.query(func.count(distinct(Invoice.client_id)))\
-        .filter(Invoice.enterprise_profile_id == enterprise_profile.id)\
+        .filter(Invoice.enterprise_profile_id == enterprise_profile_id)\
         .scalar() or 0
     
     # Get total invoices
     total_invoices = db.query(func.count(Invoice.id))\
-        .filter(Invoice.enterprise_profile_id == enterprise_profile.id)\
+        .filter(Invoice.enterprise_profile_id == enterprise_profile_id)\
         .scalar() or 0
     
     # Get total products
     total_products = db.query(func.count(ProductModel.id))\
-        .filter(ProductModel.enterprise_profile_id == enterprise_profile.id)\
+        .filter(ProductModel.enterprise_profile_id == enterprise_profile_id)\
         .scalar() or 0
     
     # Get top 5 clients with their details
@@ -414,7 +415,7 @@ async def enterprise_dashboard(
         func.count(Invoice.id).label('total_orders'),
         func.sum(Invoice.total_amount).label('total_spent')
     ).join(Invoice, Invoice.client_id == Clients.id)\
-    .filter(Invoice.enterprise_profile_id == enterprise_profile.id)\
+    .filter(Invoice.enterprise_profile_id == enterprise_profile_id)\
     .group_by(Clients.id)\
     .order_by(func.sum(Invoice.total_amount).desc())\
     .limit(5)\
@@ -435,8 +436,33 @@ async def enterprise_dashboard(
         "pages/dashboard.html",
         {
             "request": request,
-            "user": user,
-            "enterprise_profile": enterprise_profile,
+            "user": {
+                "id": 1,
+                "name": "Dummy User",
+                "email": "dummy@example.com",
+                "picture": "https://example.com/avatar.png",
+                "auth_provider": "google",
+                "provider_user_id": "google-oauth2|1234567890",
+                "user_type": "ENTERPRISE",
+                "is_active": True
+            },
+            "enterprise_profile": {
+                "id": 1,
+                "user_id": 1,
+                "company_name": "Dummy Enterprise",
+                "registration_number": "REG123456",
+                "address": "123 Main St",
+                "state": "California",
+                "postal_code": "90001",
+                "city": "Los Angeles",
+                "logo": "https://example.com/logo.png",
+                "notes": "Sample notes",
+                "website": "https://dummyenterprise.com",
+                "phone": "+1-555-1234",
+                "email": "contact@dummyenterprise.com",
+                "business_type": "Tech",
+                "tax_id": "TAX987654"
+            },
             "current_page": "dashboard",
             "stats": {
                 "total_revenue": total_revenue,
