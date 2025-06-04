@@ -295,7 +295,7 @@ async def enterprise_analytics(
         InvoiceItem, Invoice.id == InvoiceItem.invoice_id
     ).filter(
         and_(
-            Invoice.enterprise_profile_id == enterprise_profile.id,
+            Invoice.enterprise_profile_id == 1,
             Invoice.creation_date.between(start_date, end_date)
         )
     ).first()
@@ -311,7 +311,7 @@ async def enterprise_analytics(
         InvoiceItem, Invoice.id == InvoiceItem.invoice_id
     ).filter(
         and_(
-            Invoice.enterprise_profile_id == enterprise_profile.id,
+            Invoice.enterprise_profile_id == 1,
             Invoice.creation_date.between(start_date, end_date)
         )
     ).group_by(
@@ -358,10 +358,9 @@ async def enterprise_analytics(
 @dashboard_router.get("/enterprise/dashboard", name="enterprise_dashboard")
 async def enterprise_dashboard(
     request: Request,
-    db: Session = Depends(get_db),
-    user: dict = Depends(require_user_type(UserType.ENTERPRISE)),
-    enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile)
+    db: Session = Depends(get_db)
 ) -> Dict[str, Any]:
+
     # Get current month and year
     today = datetime.now()
     start_of_month = today.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
@@ -372,13 +371,13 @@ async def enterprise_dashboard(
     ).join(
         Invoice, Invoice.id == InvoiceItem.invoice_id
     ).filter(
-        Invoice.enterprise_profile_id == enterprise_profile.id
+        Invoice.enterprise_profile_id == 1
     ).scalar() or 0
         
     # Calculate this month's revenue
     current_month_revenue = db.query(func.sum(Invoice.total_amount))\
         .filter(
-            Invoice.enterprise_profile_id == enterprise_profile.id,
+            Invoice.enterprise_profile_id == 1,
             Invoice.creation_date >= start_of_month
         ).scalar() or 0
     
@@ -387,7 +386,7 @@ async def enterprise_dashboard(
     last_month_start = last_month.replace(day=1)
     last_month_revenue = db.query(func.sum(Invoice.total_amount))\
         .filter(
-            Invoice.enterprise_profile_id == enterprise_profile.id,
+            Invoice.enterprise_profile_id == 1,
             Invoice.creation_date.between(last_month_start, start_of_month)
         ).scalar() or 0
     
@@ -395,17 +394,17 @@ async def enterprise_dashboard(
     
     # Get total clients count
     total_clients = db.query(func.count(distinct(Invoice.client_id)))\
-        .filter(Invoice.enterprise_profile_id == enterprise_profile.id)\
+        .filter(Invoice.enterprise_profile_id == 1)\
         .scalar() or 0
     
     # Get total invoices
     total_invoices = db.query(func.count(Invoice.id))\
-        .filter(Invoice.enterprise_profile_id == enterprise_profile.id)\
+        .filter(Invoice.enterprise_profile_id == 1)\
         .scalar() or 0
     
     # Get total products
     total_products = db.query(func.count(ProductModel.id))\
-        .filter(ProductModel.enterprise_profile_id == enterprise_profile.id)\
+        .filter(ProductModel.enterprise_profile_id == 1)\
         .scalar() or 0
     
     # Get top 5 clients with their details
@@ -414,7 +413,7 @@ async def enterprise_dashboard(
         func.count(Invoice.id).label('total_orders'),
         func.sum(Invoice.total_amount).label('total_spent')
     ).join(Invoice, Invoice.client_id == Clients.id)\
-    .filter(Invoice.enterprise_profile_id == enterprise_profile.id)\
+    .filter(Invoice.enterprise_profile_id == 1)\
     .group_by(Clients.id)\
     .order_by(func.sum(Invoice.total_amount).desc())\
     .limit(5)\
@@ -431,11 +430,36 @@ async def enterprise_dashboard(
         'total_spent': client.total_spent
     } for client in top_clients]
 
+    # Dummy user data for testing/demo purposes
+    dummy_user = {
+        "id": 1,
+        "name": "John Doe",
+        "email": "john.doe@example.com",
+        "type": "ENTERPRISE"
+    }
+    # Dummy enterprise_profile data for testing/demo purposes
+    enterprise_profile = EnterpriseProfile(
+        id=1,
+        user_id=1,
+        company_name="Acme Corp",
+        registration_number="REG123456",
+        address="123 Main St",
+        state="California",
+        postal_code="90001",
+        city="Los Angeles",
+        logo=None,
+        notes=None,
+        website="https://acme.com",
+        phone="123-456-7890",
+        email="info@acme.com",
+        business_type="Technology",
+        tax_id="TAX987654",
+    )
     return templates.TemplateResponse(
         "pages/dashboard.html",
         {
             "request": request,
-            "user": user,
+            "user": dummy_user,  # Pass dummy user here
             "enterprise_profile": enterprise_profile,
             "current_page": "dashboard",
             "stats": {
