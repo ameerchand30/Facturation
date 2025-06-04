@@ -447,7 +447,7 @@ async def enterprise_dashboard(
         state="California",
         postal_code="90001",
         city="Los Angeles",
-        logo=None,
+        logo="https://picsum.photos/200/300",
         notes=None,
         website="https://acme.com",
         phone="123-456-7890",

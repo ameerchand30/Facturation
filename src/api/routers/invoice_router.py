@@ -32,19 +32,40 @@ invoice_router = APIRouter(
 )
 # to show enterprise and customer data while creating inovice
 @invoice_router.get("/create", response_class=HTMLResponse, name="create_invoice_form")
-async def create_invoice_form(request: Request, db: Session = Depends(get_db), user: dict = Depends(require_user_type(UserType.ENTERPRISE)), enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile)):
+async def create_invoice_form(request: Request, db: Session = Depends(get_db)):
 
-    # Check authorization
-    auth_check = check_authorization(user, redirect=True)
-    if auth_check:
-        return auth_check
-    customers = db.query(Clients).filter(Clients.enterprise_profile_id == enterprise_profile.id).all()
+    user = {
+        "id": 1,
+        "name": "John Doe",
+        "email": "john.doe@example.com",
+        "type": "ENTERPRISE"
+    }
+    customers = db.query(Clients).filter(Clients.enterprise_profile_id == 1).all()
     # Get the current date and time in the local timezone
     local_time = datetime.now(ZoneInfo("Europe/Paris"))
-    products = db.query(ProductModel).filter(ProductModel.enterprise_profile_id == enterprise_profile.id).all()
-    enterprise_data = [{"id": enterprise.id, "name": enterprise.name} for enterprise in db.query(Enterprise).filter(Enterprise.enterprise_profile_id == enterprise_profile.id).all()]
+    products = db.query(ProductModel).filter(ProductModel.enterprise_profile_id == 1).all()
+    enterprise_data = [{"id": enterprise.id, "name": enterprise.name} for enterprise in db.query(Enterprise).filter(Enterprise.enterprise_profile_id == 1).all()]
     customer_data = {customer.name: {"id": customer.id,"email":customer.email } for customer in customers}
     product_data = {product.name: {"id": product.id, "unit_price": product.price,"description":product.description} for product in products}
+
+        # Dummy enterprise_profile data for testing/demo purposes
+    enterprise_profile = EnterpriseProfile(
+        id=1,
+        user_id=1,
+        company_name="Acme Corp",
+        registration_number="REG123456",
+        address="123 Main St",
+        state="California",
+        postal_code="90001",
+        city="Los Angeles",
+        logo="https://picsum.photos/200/300",
+        notes=None,
+        website="https://acme.com",
+        phone="123-456-7890",
+        email="info@acme.com",
+        business_type="Technology",
+        tax_id="TAX987654",
+    )
 
     return templates.TemplateResponse("pages/createInvoice.html", {"request": request,
     "enterprise_profile": enterprise_profile, "customer_data": customer_data, "product_data": product_data, "enterprise_data": enterprise_data, "current_page": "create_invoices","user": user, "mode": "create", "rowCounter": 1,"today": local_time}) # Add rowCounter to the context
@@ -54,8 +75,6 @@ async def create_invoice_form(request: Request, db: Session = Depends(get_db), u
 async def read_invoices(
     request: Request,
     db: Session = Depends(get_db),
-    user: dict = Depends(require_user_type(UserType.ENTERPRISE)),
-    enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile),
     page: int = 1,
     per_page: int = 10,
     search: str = None,
@@ -63,6 +82,13 @@ async def read_invoices(
     order: str = "desc"
 ):
     try:
+
+        user = {
+            "id": 1,
+            "name": "John Doe",
+            "email": "john.doe@example.com",
+            "type": "ENTERPRISE"
+        }
         # Ensure valid pagination parameters
         page = max(1, page)
         per_page = min(max(10, per_page), 100)
@@ -73,7 +99,7 @@ async def read_invoices(
                 .options(joinedload(Invoice.client))
                 .options(joinedload(Invoice.enterprises))
                 .options(joinedload(Invoice.invoice_items))
-                .filter(Invoice.enterprise_profile_id == enterprise_profile.id))
+                .filter(Invoice.enterprise_profile_id == 1))
 
         # Apply search if provided
         if search:
@@ -118,7 +144,7 @@ async def read_invoices(
                 "sort": sort,
                 "order": order,
                 "user": user,
-                "enterprise_id": enterprise_profile.id
+                "enterprise_id": 1
             }
         )
         return response
@@ -148,9 +174,9 @@ async def edit_invoice_form(invoice_id: int, request: Request, db: Session = Dep
     if not invoice:
         raise HTTPException(status_code=404, detail="Invoice not found")
     local_time = datetime.now(ZoneInfo("Europe/Paris"))
-    customers = db.query(Clients).filter(Clients.enterprise_profile_id == enterprise_profile.id).all()
-    products = db.query(ProductModel).filter(ProductModel.enterprise_profile_id == enterprise_profile.id).all()
-    enterprise_data = [{"id": enterprise.id, "name": enterprise.name} for enterprise in db.query(Enterprise).filter(Enterprise.enterprise_profile_id == enterprise_profile.id).all()] # Note method
+    customers = db.query(Clients).filter(Clients.enterprise_profile_id == 1).all()
+    products = db.query(ProductModel).filter(ProductModel.enterprise_profile_id == 1).all()
+    enterprise_data = [{"id": enterprise.id, "name": enterprise.name} for enterprise in db.query(Enterprise).filter(Enterprise.enterprise_profile_id == 1).all()] # Note method
     customer_data = {customer.name: {"id": customer.id,"email":customer.email } for customer in customers} # Another method 
     product_data = {product.name: {"id": product.id, "unit_price": product.price,"description":product.description} for product in products}
     
@@ -229,7 +255,7 @@ async def search_clients(
     try:
         # Search clients with name matching the term
         clients = db.query(Clients).filter(
-            Clients.enterprise_profile_id == enterprise_profile.id,
+            Clients.enterprise_profile_id == 1,
             Clients.name.ilike(f"%{term}%")
         ).all()
 
