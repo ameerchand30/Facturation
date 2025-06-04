@@ -19,7 +19,11 @@
 }
 </style>
 <div class="user-avatar">
-    <img src="{{ user.picture or url_for('static', path='images/default-profile.png') }}"
+    {% if user %}
+        <img src="{{ user.picture or url_for('static', path='images/default-profile.png') }}"
+    {% else %}
+        <img src="{{ url_for('static', path='images/default-profile.png') }}"
+    {% endif %}
          alt="User Image"
          id="user-avatar-img"
          style="cursor:pointer;"
