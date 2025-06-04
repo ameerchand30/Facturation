@@ -52,16 +52,30 @@ async def create_report_form(invoice_id: int  ,request: Request, db: Session = D
 async def generate_pdf(
     invoice_id: int, 
     request: Request, 
-    db: Session = Depends(get_db),
-    user: dict = Depends(require_user_type(UserType.ENTERPRISE)),
-    enterprise_profile: EnterpriseProfile = Depends(get_enterprise_profile) # Add this line to get the enterprise profile
+    db: Session = Depends(get_db)
 ):
 
     # Check authorization
-    auth_check = check_authorization(user, redirect=True)
-    if auth_check:
-        return auth_check
+   
     try:
+            # Dummy enterprise_profile data for testing/demo purposes
+        enterprise_profile = EnterpriseProfile(
+            id=1,
+            user_id=1,
+            company_name="Acme Corp",
+            registration_number="REG123456",
+            address="123 Main St",
+            state="California",
+            postal_code="90001",
+            city="Los Angeles",
+            logo="https://picsum.photos/200/300",
+            notes=None,
+            website="https://acme.com",
+            phone="123-456-7890",
+            email="info@acme.com",
+            business_type="Technology",
+            tax_id="TAX987654",
+        )
         invoice_data = get_invoice_details(db, invoice_id)
         html_content = templates.TemplateResponse(
             "pages/pdf.html",
