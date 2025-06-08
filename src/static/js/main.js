@@ -38,9 +38,13 @@
         }
 
         // Example: Show welcome notification
-        setTimeout(() => {
-            showNotification("Welcome to your modern dashboard!");
+        if (!localStorage.getItem('dashboardFirstVisit')) {
+             setTimeout(() => {
+            showNotification("Welcome to join our community!");
         }, 1000);
+            localStorage.setItem('dashboardFirstVisit', 'true');
+        }
+       
 
         // Add hover effects to nav links
         document.querySelectorAll('.nav-link').forEach(link => {

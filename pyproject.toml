@@ -52,6 +52,11 @@ openai = "^1.72.0"
 plotly = "^6.0.1"
 piccolo-api = "^1.5.2"
 
+# tests
+pytest = "^8.4.0"
+pytest-asyncio = "^1.0.0"
+pytest-cov = "^6.1.1"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
