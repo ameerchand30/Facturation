@@ -1,8 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Existing head content -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Professional invoice generator for modern businesses. Create, send, and track invoices easily. Get paid faster with automated billing solutions.">
+    <meta name="keywords" content="invoice generator, billing software, invoice management, business invoicing, automated billing, professional invoices">
+    <meta name="author" content="Your Company Name">
+    
+    <!-- Open Graph Tags for Social Media -->
+    <meta property="og:title" content="Smart Invoice Generator | Professional Billing Software">
+    <meta property="og:description" content="Create and manage professional invoices in seconds. Streamline your billing process and get paid faster.">
+    <meta property="og:image" content="{{ url_for('static', path='img/og-image.jpg') }}">
+    <meta property="og:url" content="{{ request.url }}">
+    
+    <!-- Twitter Card Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Smart Invoice Generator">
+    <meta name="twitter:description" content="Professional invoicing solution for modern businesses">
+    
     <title>{% block title %}Chand Invoices{% endblock %}</title>
     
     <!-- CSS Dependencies -->
