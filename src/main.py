@@ -58,6 +58,8 @@ ALLOWED_CSRF_HOSTS = [
     "localhost",
     "127.0.0.1",
     "your-production-domain.com",  # Replace with your production domain
+    "https://facturation-onr3.onrender.com",  # Replace with your API subdomain if applicable
+
     # Add your production domains here, e.g., "yourdomain.com", "api.yourdomain.com"
 ]
 
