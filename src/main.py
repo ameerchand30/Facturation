@@ -57,9 +57,13 @@ app.add_middleware(SessionMiddleware, secret_key="your-secret-key", session_cook
 ALLOWED_CSRF_HOSTS = [
     "localhost",
     "127.0.0.1",
-    "your-production-domain.com",  # Replace with your production domain
-    "https://facturation-onr3.onrender.com",  # Replace with your API subdomain if applicable
-
+    "https://facturation-onr3.onrender.com",
+    "facturation-onr3.onrender.com",
+    "https://facturation.onrender.com",
+    "facturation.onrender.com",
+    "*",  # Allows all hosts (not recommended for production)
+      # Replace with your API subdomain if applicable
+    # Replace with your production domain
     # Add your production domains here, e.g., "yourdomain.com", "api.yourdomain.com"
 ]
 
