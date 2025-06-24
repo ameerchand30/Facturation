@@ -17,6 +17,7 @@ class Setting(BaseSettings):
     POSTGRES_PASSWORD : str = "admin"
     POSTGRES_DB : str = "facturaization"
     
+    
     algorithm: str
     access_token_expire_minutes: int
     # security
