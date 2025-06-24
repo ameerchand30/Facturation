@@ -771,7 +771,8 @@
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRFToken': csrfTokenElement.value
+                        'X-CSRFToken': getCSRFToken(),
+                        'Accept': 'application/json'
                     },
                     credentials: 'same-origin'
                 })
@@ -791,9 +792,7 @@
                             row.style.transition = 'all 0.3s ease';
                             row.style.opacity = '0';
                             row.style.transform = 'translateX(-20px)';
-                            setTimeout(() => {
-                                location.reload();
-                            }, 300);
+                            location.reload();
                         });
                     } else {
                         throw new Error(data.message || 'Failed to delete product');

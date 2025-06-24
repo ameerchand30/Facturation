@@ -710,6 +710,9 @@
 
     // Delete invoice function with modern SweetAlert
     function deleteInvoice(invoiceId) {
+
+       
+
         Swal.fire({
             title: 'Delete Invoice?',
             text: "This action cannot be undone!",
@@ -730,6 +733,9 @@
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken(),
+                        'Accept': 'application/json'
+
                     }
                 })
                 .then(response => response.json())
