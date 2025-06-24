@@ -974,12 +974,43 @@ function importEnterprises() {
     showToast('Import functionality is not implemented yet', 'warning');
 }
 function deleteEnterprise(id, name) {
-    if (confirm(`Are you sure you want to delete the enterprise "${name}"? This action cannot be undone.`)) {
-        // Placeholder for actual delete logic
-        showToast(`Enterprise "${name}" deleted successfully`, 'success');
-        // Refresh the table or remove the row
-        initializeTable();
-    }
+ 
+    Swal.fire({
+        title: `Delete "${name}"?`,
+        text: "This action cannot be undone.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#e53e3e",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Yes, delete it!"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/enterprises/delete/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken(),
+                    'Accept': 'application/json'
+                }
+            })
+            .then(async response => {
+                if (response.ok) {
+                    Swal.fire("Deleted!", `Enterprise "${name}" has been deleted.`, "success");
+                    // Remove the row from the table
+                    const row = document.querySelector(`.row-checkbox[value="${id}"]`)?.closest('tr');
+                    if (row) row.remove();
+                    initializeTable();
+                    updatePaginationInfo();
+                } else {
+                    const data = await response.json().catch(() => ({}));
+                    Swal.fire("Error", data.detail || "Failed to delete enterprise.", "error");
+                }
+            })
+            .catch(() => {
+                Swal.fire("Error", "Network error. Please try again.", "error");
+            });
+        }
+    });
 }
 function showToast(message, type) {
     // Placeholder for toast notification logic

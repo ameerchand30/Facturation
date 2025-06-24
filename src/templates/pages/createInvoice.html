@@ -1043,11 +1043,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const csrfToken = getCSRFToken();
 
         // Send POST request
-        fetch('{{ url_for("create_invoice") }}', {
+        const form = $(this);
+        fetch(form.attr('action'), {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
             },
             body: JSON.stringify(invoiceData)
         })
