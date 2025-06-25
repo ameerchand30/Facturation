@@ -943,7 +943,7 @@
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRFToken': document.querySelector('input[name="csrf_token"]').value
+                        'X-CSRFToken': getCSRFToken()
                     }
                 })
                 .then(response => response.json())

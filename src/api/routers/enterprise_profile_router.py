@@ -64,7 +64,7 @@ async def update_enterprise_profile(
 async def upload_logo(
     request: Request,
     db: Session = Depends(get_db),
-    logo: UploadFile = File(...),
+    logo: UploadFile = File(None),
     user: dict = Depends(require_user_type(UserType.ENTERPRISE))
 ):
 
@@ -76,13 +76,18 @@ async def upload_logo(
     if not profile:
         raise HTTPException(status_code=404, detail="Enterprise profile not found")
     
+    if logo is None or logo.filename == "":
+        raise HTTPException(status_code=400, detail="No logo file uploaded")
+    
     try:
         # Handle logo upload
         file_location = f"static/img/enterprise_profile_images/{logo.filename}"
+        print(f"Uploading logo to: {file_location}")
         with open(file_location, "wb+") as file_object:
             file_object.write(await logo.read())
         
         profile.logo = logo.filename
+        print(f"Logo uploaded: {file_location}")
         db.commit()
         
         return {
@@ -92,4 +97,5 @@ async def upload_logo(
         }
     except Exception as e:
         db.rollback()
+        print(f"Error uploading logo: {e}")
         raise HTTPException(status_code=400, detail=str(e))

@@ -181,10 +181,15 @@ $(document).ready(function() {
         // Upload the logo using fetch
         const formData = new FormData();
         formData.append('logo', file);
+        console.log(getCSRFToken());
 
         fetch('{{ url_for("upload_enterprise_logo") }}', { 
             method: 'POST',
             body: formData,
+            headers: {
+                'X-CSRFToken': getCSRFToken(), 
+                'Accept': 'application/json'
+            }
         })
         .then(response => {
             if (!response.ok) {
@@ -242,7 +247,7 @@ $(document).ready(function() {
             'Content-Type': 'application/json',
             'X-CSRFToken': getCSRFToken(),
             'Accept': 'application/json'
-        },
+         },
         body: JSON.stringify(formData)
     })
     .then(response => {
