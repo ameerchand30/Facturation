@@ -239,7 +239,9 @@ $(document).ready(function() {
     fetch('{{ url_for("update_enterprise_profile") }}', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken(),
+            'Accept': 'application/json'
         },
         body: JSON.stringify(formData)
     })
