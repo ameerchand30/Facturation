@@ -92,7 +92,9 @@ async def login(request: Request, provider: str, user_type: UserType):
         raise HTTPException(status_code=400, detail=f"Unsupported provider: {provider}")
     # Redirect to provider's login
     redirect_uri = request.url_for('auth_callback', provider=provider)
-    return await client.authorize_redirect(request, redirect_uri)
+    # Always show consent screen by setting prompt="consent"
+    params = {"prompt": "consent"}
+    return await client.authorize_redirect(request, redirect_uri, params=params)
 
 @auth_router.get("/auth/callback/{provider}")
 async def auth_callback(request: Request, provider: str, db: Session = Depends(get_db)):
